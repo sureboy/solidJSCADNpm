@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "allowJs": true,
+    // ... 其他配置
+    "types": ["node"] // 确保这一项存在
+  }
+}
