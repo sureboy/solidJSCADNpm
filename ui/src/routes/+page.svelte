@@ -29,6 +29,7 @@ import {
   isComplete,streams,MAX_MESSAGE_SIZE,
   onDataFrame
 } from "#lib/function/geoGet.ts"
+import { dev } from '$app/env';
 let geometrys:{geometry:any,material:any,type:string,show:boolean,tag:string}[] = $state([])
 let stopTicker = $state(false) 
 let showMenu = $state(false) 
@@ -71,8 +72,9 @@ const Clickhandle=(k:string|{[key:string]:any}|null)=>{
       (solidControlConfig as {[key:string]:any})[k.id] = k.checked
   }
 } 
+// import {  PUBLIC_API_BASE } from '$app/env/public';
     let eventSource: EventSource;
-const rootUrl = "http://localhost:3000"
+const rootUrl = dev?"http://localhost:3000":""
 
 function handleMeshMessage(data:{msg:{db:any},run:string}) {
   const frame = decodeFrame(data.msg.db);

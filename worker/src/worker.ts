@@ -55,6 +55,7 @@ onMainMessage(async (event) => {
         mainList.push(k)
         let index = 0
         await getCsgObjArray(db,async (msg: any)=>{
+          //console.log(msg)
           await sendGeometry(
             {
               send: async (val) => {

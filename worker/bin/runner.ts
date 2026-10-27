@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 import {startWorker,postMessage,startHttp} from '../src/index.ts' 
-import {type baseConfig} from '#lib/utils/baseConfig.ts'
+import {  type baseConfig} from '#lib/utils/baseConfig.ts'
 import type { Response as ExpressResponse } from 'express';
 import path from 'path';
 import {walk,mtime} from '#lib/utils/walkFile.ts'
- 
+import fs from 'fs';
+
 
 const __dirname = process.cwd(); 
-console.log(__dirname)
-const baseConfig = {srcDir:__dirname}
-const worker = startWorker(baseConfig)
-startHttp(baseConfig,async (conf:baseConfig,res: ExpressResponse)=>{
-    const REL = './index.js';
+//console.log(__dirname)
+const Config:baseConfig = {srcDir:__dirname,Port:3000}
+const data = fs.readFileSync('./package.json','utf-8')
+const json = JSON.parse(data);
+const REL =json.main || './index.js';
+const worker = startWorker(Config)
+startHttp(Config,async (conf:baseConfig,res: ExpressResponse)=>{
+    
     const srcFile = path.join(conf.srcDir, REL);
     const tmpFile = path.join(conf.tmpDir||"./", REL);
     function isSrcNewer() {
@@ -30,7 +34,8 @@ startHttp(baseConfig,async (conf:baseConfig,res: ExpressResponse)=>{
       } 
     }
     if (isSrcNewer()) {
-        postMessage({name:"./index.js"})
+      console.log("run")
+        postMessage({name:REL})
         worker.addListener("message",handMsg)
     }else{
       const mainList:string[] = []

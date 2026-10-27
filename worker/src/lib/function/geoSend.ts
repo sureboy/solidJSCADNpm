@@ -22,14 +22,29 @@ import {type GeometryMeta,
 //const CHUNK_SIZE  = 64 * 1024;
 //const MAX_PAYLOAD = CHUNK_SIZE - HEADER_SIZE;
 let nextMsgId = 1;
-function toAB(x: ArrayBuffer | ArrayBufferView): ArrayBuffer {
+function toAB_(x: ArrayBuffer | ArrayBufferView): ArrayBuffer {
   if (x instanceof ArrayBuffer) return x;
   if (x.byteOffset === 0 && x.byteLength === x.buffer.byteLength) {
     return x.buffer as ArrayBuffer;
   }
   return x.buffer.slice(x.byteOffset, x.byteOffset + x.byteLength) as ArrayBuffer;
 }
+function toAB(x: ArrayBuffer | ArrayBufferView): ArrayBuffer {
+  if (x instanceof ArrayBuffer) return x;
 
+  if (ArrayBuffer.isView(x)) {
+    if (x.byteOffset === 0 && x.byteLength === x.buffer.byteLength) {
+      return x.buffer as ArrayBuffer;
+    }
+    return x.buffer.slice(x.byteOffset, x.byteOffset + x.byteLength) as ArrayBuffer;
+  }
+
+  throw new TypeError(
+    `toAB: expected ArrayBuffer or ArrayBufferView, got ${
+      x === null ? 'null' : typeof x
+    }`
+  );
+}
 export async function sendGeometry(
   channel: {send:(db:any)=>(void|Promise<void>)},
   obj: csgObj,

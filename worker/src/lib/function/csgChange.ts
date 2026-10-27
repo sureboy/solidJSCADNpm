@@ -180,7 +180,7 @@ export const getCsgObj =async (v:  Geo,index:number, back?: BackCallback):Promis
        
     } else {
     
-        await back?.({ options: v });
+      //  await back?.({ options: v });
     
       return undefined;
     }

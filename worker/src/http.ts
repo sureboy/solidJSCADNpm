@@ -4,6 +4,8 @@ import { fileURLToPath,pathToFileURL } from 'url';
 import { dirname,join } from 'path';
 import type { Response as ExpressResponse } from 'express';
 import cors from 'cors';
+import ip from 'ip'
+import qrcode from 'qrcode'
 //import * as path from 'path'
 //const __dirname  = dirname(fileURLToPath(import.meta.url))
 export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: ExpressResponse)=>Promise<any> )=>{ 
@@ -11,7 +13,7 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
     const config = Object.assign({},defaultConfig,opt)
     const app = express();
     app.use(cors());
-    const PORT = process.env.PORT || 3000; 
+    const PORT = opt.Port || 3000; 
     app.use("/run",async (req,res)=>{
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
@@ -25,7 +27,7 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
     })
     app.use('/src',express.static(config.srcDir ))
  
-    app.use('/preview',express.static(
+    app.use(express.static(
         config.uiDir||
         join(dirname(fileURLToPath(import.meta.url)),"ui")  
     ));
@@ -59,6 +61,11 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
         });
     });*/
     app.listen(PORT, () => {
-    console.log('Server running at http://localhost:3000');
+        const Ruri = `http://${ip.address()}:${PORT}`
+        qrcode.toString(Ruri, { type: 'terminal'  }, (err, string) => {
+            console.log(string);
+        });
+        //    console.log(Ruri); 
+        console.log(`Server running at ${Ruri}\n http://localhost:${PORT}`);
     });
 }
