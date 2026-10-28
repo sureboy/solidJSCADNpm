@@ -1,5 +1,6 @@
 import path from 'path';
-//import {baseConfig} from '#lib/utils/baseConfig.ts'; 
+import { Worker } from 'worker_threads';
+import {postMain,onMainMessage} from '#lib/utils/workerLib.ts'; 
 //import { fileURLToPath } from 'url';
 import { pathToFileURL } from 'url';
 import {getCsgObjArray} from '#lib/function/csgChange.ts' 
@@ -8,41 +9,52 @@ import  { StorageAdapter   } from '#lib/storage-adapter/adapter.ts';
 import {sendGeometry} from '#lib/function/geoSend.ts'
 import { defaultConfig,type baseConfig } from '#lib/utils/baseConfig.ts';
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// ============ Worker 兼容层 ============
-const isNode = typeof process !== 'undefined' && !!process.versions?.node
-let nodeParentPort: any = null
-if (isNode) {
-  try {
-    nodeParentPort = (await import('node:worker_threads')).parentPort
-  } catch {}
-}
-
-const postMain =(msg: any, transfer?: Transferable[]) => {
-  if (nodeParentPort) {
-    transfer ? nodeParentPort.postMessage(msg, transfer) : nodeParentPort.postMessage(msg)
-  } else {
-    const w = self as unknown as Worker
-    transfer ? w.postMessage(msg, transfer) : w.postMessage(msg)
-  }
-}
-
-const onMainMessage = (handler: (data: any) => void) => {
-  if (nodeParentPort) nodeParentPort.on('message', handler)
-  else self.onmessage = (e: MessageEvent) => handler(e.data)
-}
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'node:path';
 
 let storage:StorageAdapter|undefined =undefined // = createStorage({baseDir:baseConfig.baseDir})
 //const config:baseConfig = 
+const workerPool = []
+const createChileWorker = ()=>{
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const workerPath = join(__dirname, 'childWorker.ts');
+  const num = defaultConfig.workerNum || 2
+  for (let i=0;i<num;i++){
+    const worker = new Worker(workerPath) 
+    workerPool.push({busy:false,worker})
+  }
+
+
+}
 onMainMessage(async (event) => {
   if (event.baseConfig){
     Object.assign(defaultConfig,event.baseConfig)
     storage = createStorage({baseDir:defaultConfig.tmpDir})
+    createChileWorker()
   }
   if (event.name) {
     const target = path.resolve(defaultConfig.srcDir  , event.name);
-    let fileName = pathToFileURL(target).href
-    const mod = await import(fileName);
-    await storage?.deleteDirectory(path.join( event.name))
+    let fileName = pathToFileURL(target).href 
+    await storage?.deleteDirectory(path.join("", event.name))
+    const  mod = await import(`${fileName}?v=${Date.now()}`); 
+    const fnlistSet = new Set<string>() 
+    const fnlist = Object.keys(mod)
+    let opt:{[k:string]:any}={}
+    fnlist.forEach(l=>{
+      if (l==="default"){
+        Object.assign(opt,mod[l])
+        //opt['def'] = src[l]
+        return
+      }
+      if (typeof mod[l] ==="function"){
+        fnlistSet.add(l)
+      }else{
+        opt[l] = mod[l]
+      }
+    }) 
+
+
+    
     //  const src = await import(path.join(__dirname,event.name))
     const mainList:string[] = []
     
@@ -67,8 +79,7 @@ onMainMessage(async (event) => {
               },
             },
             msg as any,
-          )
-          
+          )          
         })
       }
     }

@@ -107,6 +107,7 @@ export class NodeFSStorage extends StorageAdapter {
   // nodefs.ts
   async deleteDirectory(dir: string): Promise<void> {
     const realDir = this.getRealPath(dir);
+    //console.log("del",realDir)
     try {
       // 递归删除目录及其所有内容（包括子目录）
       await fs.promises.rm(realDir, { recursive: true, force: true });

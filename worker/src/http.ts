@@ -34,8 +34,13 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
     if (config.tmpDir)
     app.use('/tmp',express.static(config.tmpDir, { 
         index: false, 
-        setHeaders: (res, path) => {
-            // 可选：添加缓存头
+        etag: false,          // 关闭 ETag（否则浏览器仍会发条件请求）
+        lastModified: false,  // 关闭 Last-Modified
+        setHeaders: (res, filePath) => {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+            res.setHeader('Pragma', 'no-cache');        // 兼容 HTTP/1.0
+            res.setHeader('Expires', '0');              // 兼容老浏览器
+            res.setHeader('Surrogate-Control', 'no-store'); // 针对 CDN / 反向代理
         }
     }));
     /*

@@ -11,8 +11,8 @@ const __dirname = process.cwd();
 //console.log(__dirname)
 const Config:baseConfig = {srcDir:__dirname,Port:3000}
 const data = fs.readFileSync('./package.json','utf-8')
-const json = JSON.parse(data);
-const REL =json.main || './index.js';
+const packageConfig = JSON.parse(data);
+const REL =packageConfig.main || './index.js';
 const worker = startWorker(Config)
 startHttp(Config,async (conf:baseConfig,res: ExpressResponse)=>{
     
@@ -21,6 +21,7 @@ startHttp(Config,async (conf:baseConfig,res: ExpressResponse)=>{
     function isSrcNewer() {
         const s = mtime(srcFile);
         const t = mtime(tmpFile);
+        //console.log(s,t)
         if (s < 0) return false;      // 源不存在
         if (t < 0) return true;       // tmp 不存在，视为需要同步
         return s > t;
@@ -34,7 +35,7 @@ startHttp(Config,async (conf:baseConfig,res: ExpressResponse)=>{
       } 
     }
     if (isSrcNewer()) {
-      console.log("run")
+      //console.log("run")
         postMessage({name:REL})
         worker.addListener("message",handMsg)
     }else{
