@@ -140,7 +140,7 @@ export const getCsgObjArray =async (db:  Geo[]|Geo, back: BackCallback) => {
 
   try {
     //await back({ start: true });
-    let index = 0;
+    let index = 1;
     await arrayReturn(db,async (v) => {
       const result =await getCsgObj(v,index, back);
       if (result){

@@ -8,12 +8,14 @@ import ip from 'ip'
 import qrcode from 'qrcode'
 //import * as path from 'path'
 //const __dirname  = dirname(fileURLToPath(import.meta.url))
-export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: ExpressResponse)=>Promise<any> )=>{ 
+export const startHttp =async (opt:baseConfig,getApp:(app: express.Express)=>void )=>{ 
     //console.log("solidjscad",t)
     const config = Object.assign({},defaultConfig,opt)
     const app = express();
     app.use(cors());
     const PORT = opt.Port || 3000; 
+    getApp(app)
+    /*
     app.use("/run",async (req,res)=>{
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
@@ -24,13 +26,14 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
         } catch (err:any) {
             res.status(500).json({ ok: false, error: err.message });
         }
-    })
+    })*/
     app.use('/src',express.static(config.srcDir ))
  
     app.use(express.static(
         config.uiDir||
         join(dirname(fileURLToPath(import.meta.url)),"ui")  
     ));
+    /*
     if (config.tmpDir)
     app.use('/tmp',express.static(config.tmpDir, { 
         index: false, 
@@ -42,7 +45,7 @@ export const startHttp =async (opt:baseConfig,handle:(config:baseConfig,res: Exp
             res.setHeader('Expires', '0');              // 兼容老浏览器
             res.setHeader('Surrogate-Control', 'no-store'); // 针对 CDN / 反向代理
         }
-    }));
+    }));*/
     /*
     app.get('/events', (req, res) => {
         // 1. 设置 SSE 必需的响应头

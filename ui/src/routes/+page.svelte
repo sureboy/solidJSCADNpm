@@ -2,7 +2,7 @@
 <script lang="ts">
 import { Canvas } from '@threlte/core'
 import Menu from '#lib/components/Menu.svelte'   
-//import { csg2Geo } from "#lib/function/csg2Three.js"; 
+import { csg2Geo } from "#lib/function/csg2Three.js"; 
 import { onMount } from 'svelte'; 
 import {  Vector3,WebGLRenderer } from 'three';
 import OrthoScene,{refreshCamera,refreshCameraInit,
@@ -137,6 +137,15 @@ const setMaxSize = (geometry:BufferGeometry)=>{
     solidControlConfig.GridSize  = Math.ceil(helpSize )+1 
   } 
 }
+const updateGeometrys = (data:any)=>{
+  //console.log("old update")
+  const geo = csg2Geo(data,{} )
+  if (geo){ 
+    geometrys.push(Object.assign({tag:data.tag,show:true},geo)) 
+    setMaxSize(geo.geometry)
+     
+  }  
+}
 onMount(() => {  
   eventSource = new EventSource(rootUrl+'/run');
   //fetch("http://localhost:3000/run")
@@ -149,9 +158,40 @@ onMount(() => {
     beginTime=Date.now() 
     tickRunTime() 
   }
-  eventSource.onmessage = (event) => {
+  eventSource.onmessage = async (event) => {
     const newData = JSON.parse(event.data);
     console.log(newData) 
+    if (newData.index){
+
+      for (const [k,v] of Object.entries(newData)){
+        
+        if (v && typeof v ==="object"  && "url" in v && "__type" in v){
+          try{
+            const res  = await fetch(v.url as string) 
+            if (!res.ok){
+              return
+            }
+            const data = await  res.arrayBuffer() 
+            if (v.__type!=="ArrayBuffer"){
+              const Ctor = (globalThis as any)[v.__type as string];
+              if (Ctor) {
+                newData[k] = new Ctor(data);
+                continue
+              }
+            }
+            newData[k] = data 
+          }catch(err){
+            console.error(err)
+            return
+            newData[k]=undefined
+          }
+        
+        } 
+      }
+      updateGeometrys(newData)
+    }
+     
+ 
     if (newData.tmpPart){
       fetch(rootUrl+'/tmp/'+newData.tmpPart).then(res=>{
         if (res.ok){
