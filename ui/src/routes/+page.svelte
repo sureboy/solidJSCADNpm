@@ -16,21 +16,12 @@ import {type ThrelteContext } from '@threlte/core'
 import {
   BufferGeometry,
 } from "three";  
-import {type GeometryMeta,
-  MAX_PAYLOAD,
-  decodeFrame,
-  decodeMeta
-} from "#lib/function/geometry-protocol.ts";
-import {
-  onMeta,
-  finalizeGeometry,
-  disposeStream,
-  //buildMaterial,
-  isComplete,streams,MAX_MESSAGE_SIZE,
-  onDataFrame
-} from "#lib/function/geoGet.ts"
+
 import { dev } from '$app/env';
-let geometrys:{geometry:any,material:any,type:string,show:boolean,tag:string}[] = $state([])
+let geometrys:{
+  geometry:{type:string, material:any,geo:any}[], show:boolean,tag:string
+}[] = 
+  $state([])
 let stopTicker = $state(false) 
 let showMenu = $state(false) 
 let errHtml:HTMLElement
@@ -73,9 +64,9 @@ const Clickhandle=(k:string|{[key:string]:any}|null)=>{
   }
 } 
 // import {  PUBLIC_API_BASE } from '$app/env/public';
-    let eventSource: EventSource;
+//    let eventSource: EventSource;
 const rootUrl = dev?"http://localhost:3000":""
-
+/*
 function handleMeshMessage(data:{msg:{db:any},run:string}) {
   const frame = decodeFrame(data.msg.db);
   if (!frame) return;
@@ -119,7 +110,7 @@ function handleMeshMessage(data:{msg:{db:any},run:string}) {
     setMaxSize(st.geometry)
     disposeStream(st.msgId);
   }
-}
+}*/
 const setMaxSize = (geometry:BufferGeometry)=>{
   geometry.computeBoundingBox();
   const box = geometry.boundingBox;
@@ -138,19 +129,28 @@ const setMaxSize = (geometry:BufferGeometry)=>{
   } 
 }
 const updateGeometrys = (data:any)=>{
-  //console.log("old update")
+  //console.log("update",data)
   const geo = csg2Geo(data,{} )
   if (geo){ 
-    geometrys.push(Object.assign({tag:data.tag,show:true},geo)) 
-    setMaxSize(geo.geometry)
-     
+    (()=>{
+      for (const g of geometrys){
+        if (g.tag===data.tag){
+          g.geometry.push(geo) 
+           
+          return
+        }
+      }
+      geometrys.push( {geometry:[geo],tag:data.tag,show:true})
+      //console.log("push",geometrys.length)
+    })()    
+    setMaxSize(geo.geo) 
   }  
 }
-onMount(() => {  
-  eventSource = new EventSource(rootUrl+'/run');
+const runEvent =  (main:string="main")=>{
+  const eventSource = new EventSource(rootUrl+'/run/'+main);
   //fetch("http://localhost:3000/run")
   eventSource.onopen = ()=>{
-    geometrys = []
+    //geometrys = []
     solidControlConfig.GridSize=10
     solidControlConfig.MaxSize.set(10,10,10)
     showMenu=false
@@ -160,7 +160,7 @@ onMount(() => {
   }
   eventSource.onmessage = async (event) => {
     const newData = JSON.parse(event.data);
-    console.log(newData) 
+    //console.log(newData) 
     if (newData.index){
 
       for (const [k,v] of Object.entries(newData)){
@@ -191,7 +191,7 @@ onMount(() => {
       updateGeometrys(newData)
     }
      
- 
+ /*
     if (newData.tmpPart){
       fetch(rootUrl+'/tmp/'+newData.tmpPart).then(res=>{
         if (res.ok){
@@ -200,15 +200,37 @@ onMount(() => {
           })
         }
       })
-    }
-    if (newData.mainList){
-    
-
-      moduleInit(geometrys, Object.assign({ 
-      key:"",
-      path:"test",
-      list:newData.mainList
-      } ))
+    }*/
+    if (newData.list){ 
+      moduleInit(
+        geometrys,
+      Object.assign({ 
+        Clickhandle:(checked: boolean, value: string)=>{
+          if (checked){
+            (()=>{
+              for (const g of geometrys){
+                if (g.tag ===value){
+                  g.show=true
+                  return
+                }
+              }
+              runEvent(value)
+            })()
+          }else{
+            for (const g of geometrys){
+              if (g.tag ===value){
+                g.show=false
+                return
+              }
+            }
+          }
+          
+        },
+        key:"",
+        path:"test",
+        //list:newData.mainList
+      },
+      newData ))
    
        
     }
@@ -227,9 +249,12 @@ onMount(() => {
   };
   
   
-  return () => {
-        eventSource?.close();
-    }
+  //return () => {
+  //      eventSource?.close();
+  //  }
+}
+onMount(() => {  
+  runEvent("main")
 });
 function switchView(direction:string) {
   if (direction==="camera"){ 
@@ -279,6 +304,7 @@ const getContext = (Context: ThrelteContext<WebGLRenderer>)=>{
 
 
 </div>
+ 
 <style>
 
 .preview {

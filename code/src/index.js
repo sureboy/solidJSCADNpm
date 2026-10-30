@@ -474,6 +474,7 @@ export const ringPlant = ()=>{
     ]
   };
 
+
 const   ringPlantFixBase = (o=plantO)=>{
     //const o = 5;
     const p = boFix(o)

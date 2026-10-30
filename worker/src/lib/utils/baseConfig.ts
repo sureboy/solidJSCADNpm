@@ -6,11 +6,13 @@ export type baseConfig = {
     //__dirname?:string,
     workerNum?:number,
     Port?:number,
-    srcDir:string,uiDir?:string,tmpDir?:string}
+    srcDir:string,uiDir?:string,
+    //tmpDir?:string
+}
 
 export const defaultConfig:baseConfig = { 
     //__dirname:dirname(fileURLToPath(import.meta.url)),
     srcDir : "",
     //uiDir: 'ui',
-    tmpDir : join(tmpdir(), 'solidjscad-storage')
+    //tmpDir : join(tmpdir(), 'solidjscad-storage')
 }

@@ -1,46 +1,66 @@
 <script lang="ts" module> 
-
+import {createVerticalCheckbox} from "#lib/function/checkbox.ts"
 let menu:HTMLElement
 let tmpDiv:HTMLButtonElement 
 let solidName:HTMLElement;
 //let basename:string
 //let spinner:HTMLElement;
-export const moduleInit = (  geometrys:{
-    geometry:any,
-    material:any,
-    type:string,
-    show:boolean,
-    tag:string}[] ,opt:{  
 
+export const moduleInit = (geometrys: {
+    geometry: {
+        type: string;
+        material: any;
+        geo: any;
+    }[];
+    show: boolean;
+    tag: string;
+}[],  opt:{  
+      Clickhandle?:(checked: boolean, value: string)=>void,
   list:string[],
-  path:string,
+  main:string,
   key?:string,
   option?:{[k:string]:any}, 
 } )=>{ 
   if (menu)menu.innerHTML="" 
  
   //Details.style.display="inline"
-  if (solidName)solidName.textContent = opt.path 
+  if (solidName)solidName.textContent = "main"
   tmpDiv.style.display = 'inline'
   //basename = opt.basename
   //console.log("change Main name",solidName)
   opt.list.forEach(m=>{
+    let checked = m===opt.main
+    if (!checked)
+      for (const g of geometrys){
+        if (g.tag ===m){
+          checked = true
+          break;
+        }
+      }  
+ 
+    const box = createVerticalCheckbox({checked,name:m,text:m,value:m,onChange:(c,v)=>{
+ 
+      opt.Clickhandle?.(c,v)
+    }})
+    
+    /*
     const btn = tmpDiv.cloneNode(true) as HTMLButtonElement
     //div.style.display='inline'
     //div.disabled=!opt.show
-    btn.onclick = (e)=>{
+    btn.onclick = (e)=>{*/
+      /*
       geometrys.forEach((g)=>{
         if (g.tag!==m){
           g.show=false
         }else{
           g.show=true
         }
-      })
-      //solidName.textContent=m
-      //opt.Clickhandle?.(m)
+      })*/
+     /* solidName.textContent=m
+      opt.Clickhandle?.(m)
     }
-    btn.textContent = m;
-    menu.appendChild(btn)
+    btn.textContent = m;*/
+    menu.appendChild(box)
   }) 
   if (opt.option){
     const btn = tmpDiv.cloneNode(true) as HTMLButtonElement
@@ -53,13 +73,7 @@ export const moduleInit = (  geometrys:{
     menu.appendChild(btn)
   }
   
-  tmpDiv.onclick = (e)=>{
-    geometrys.forEach((g)=>{  
-      g.show=true         
-    })
-  }
-  tmpDiv.textContent="view all"
-  menu.appendChild(tmpDiv)
+ 
   //menu.append(tmpDiv)
 }
 </script>

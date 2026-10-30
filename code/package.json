@@ -1,17 +1,17 @@
 {
   "name": "test",
   "type": "module",
-  "main":"./src/index.ts",
+  "main": "./src/index.js",
   "version": "1.0.0",
   "description": "test",
   "private": true,
   "scripts": {
-    "start":"npx worker"
+    "start": "npx worker"
   },
   "dependencies": {
     "@jscad/modeling": "^2.13.0",
     "express": "^5.3.0",
-    "manifold-3d": "^3.5.4", 
+    "manifold-3d": "^3.5.4",
     "worker": "file:../worker"
   },
   "devDependencies": {

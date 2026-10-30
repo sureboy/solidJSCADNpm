@@ -93,7 +93,7 @@ export function csg2Geo(obj:csgObj ,{ smooth = false }){
     if(smooth) {geometry = toCreasedNormals( geometry, Math.PI / 10);}
     if (colors) {geometry.setAttribute('color', new BufferAttribute(colors, isTransparent ? 4 : 3));}
     //geometry.computeVertexNormals();
-    return {geometry,material,type}
+    return { geo:geometry,type,material}
 }
  
 export function CSG2Three(obj:csgObj , { smooth = false }) {

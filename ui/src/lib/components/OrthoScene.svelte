@@ -129,68 +129,61 @@ export const refreshCamera = (direction:string,isOrthographic:boolean,MaxSize:Ve
     solidControlConfig}:{ 
     getContext:any
     solidControlConfig:ConfigType, 
-    geometrys:{geometry:any,material:any,type:string,show:boolean,tag:string}[] 
+    geometrys:{
+      geometry:{type:string, material:any,geo:any}[], show:boolean,tag:string
+    }[]
+     
 } = $props() 
   const Context= useThrelte() 
 onMount(()=>{ 
   getContext(Context) 
-})
-
- 
-//let QviewDistance = 15;
-//let isOrthographic = $state(false);
-//let camera:OrthographicCamera|PerspectiveCamera|undefined = $state(undefined)
-//let Controls :Orb|undefined = $state(undefined) ;
-//const solidControlConfig:{[k:string]:any} = $state({axes:true,grid:true,main:[]})
-//let GridSize = $state(10)
-//let geometrys:{geometry:any,material:any}[] =$state([])
-//let camera:OrthographicCamera|PerspectiveCamera|undefined = $state(undefined)
-//let Controls :Orb|undefined = $state(undefined) ;
-
-</script>
-
+}) 
+</script> 
 
 {#if solidControlConfig.isOrthographic}
-<T.OrthographicCamera bind:ref={(camera as OrthographicCamera | undefined)}
- args={[0,0,0,0,0.1,2000]} makeDefault  >
-  <OrbitControls bind:ref={Controls}   target={[0,0,0]} />
-</T.OrthographicCamera>
+  <T.OrthographicCamera bind:ref={(camera as OrthographicCamera | undefined)}
+  args={[0,0,0,0,0.1,2000]} makeDefault  >
+    <OrbitControls bind:ref={Controls}   target={[0,0,0]} />
+  </T.OrthographicCamera>
 {:else}
-   <T.PerspectiveCamera  args={[40, 1, 0.1, 2000]}
+  <T.PerspectiveCamera  args={[40, 1, 0.1, 2000]}
     makeDefault 
    //up={[PerspectiveCameraT.up.x,PerspectiveCameraT.up.y,PerspectiveCameraT.up.z]}  
    position={[10,10,10]} 
     bind:ref={(camera as PerspectiveCamera | undefined)}> 
     <OrbitControls bind:ref={Controls}  target={[0,0,0]} />
   </T.PerspectiveCamera>
-  {/if}
-  {#if solidControlConfig.Light}
+{/if}
+{#if solidControlConfig.Light}
   <T.DirectionalLight args={[0xffffff,1]} position={[0, 0, solidControlConfig.GridSize/2]}   />
   <T.DirectionalLight args={[0xffffff, 0.8]} position={[0,solidControlConfig.GridSize/2, 0]}   />
   <T.DirectionalLight args={[0xffffff, 0.6]} position={[solidControlConfig.GridSize/2, 0, 0]}   />
   <T.DirectionalLight args={[0xffffff, 0.3]} position={[0, 0, -solidControlConfig.GridSize/2]}   />
   <T.DirectionalLight args={[0xffffff, 0.5]} position={[0, -solidControlConfig.GridSize/2, 0]}   />
   <T.DirectionalLight args={[0xffffff, 0.7]} position={[-solidControlConfig.GridSize/2, 0, 0]}   />
-  {/if}
-  {#if solidControlConfig.Grid} 
+{/if}
+{#if solidControlConfig.Grid} 
   <T.GridHelper args={[solidControlConfig.GridSize,solidControlConfig.GridSize]} /> 
-  {/if}
-  {#if solidControlConfig.Axes}
+{/if}
+{#if solidControlConfig.Axes}
   <T.AxesHelper args={[solidControlConfig.GridSize/2+1]} />
-  {/if}
-  {#each geometrys as {geometry,material,type,show}} 
-    {#if show}
+{/if}
+ 
+{#each geometrys as {geometry,show}} 
+  {#if show}
+    {#each geometry as {type,geo,material} } 
       {#if type==="mesh"} 
-      <T.Mesh {geometry} {material}  > 
+      <T.Mesh geometry={geo} {material}  > 
           {#if !solidControlConfig.Light}
         <T.MeshNormalMaterial flatShading ></T.MeshNormalMaterial>
           {/if}
       </T.Mesh>
       {:else if type ==="lines"}
-      <T.Line {geometry} {material}></T.Line> 
+      <T.Line geometry={geo} {material}></T.Line> 
       {:else if type ==="line"}
-      <T.Line {geometry} {material}></T.Line> 
+      <T.Line geometry={geo} {material}></T.Line> 
       {/if}
-    {/if}
-  {/each}  
+    {/each}
+  {/if}
+{/each}  
  
