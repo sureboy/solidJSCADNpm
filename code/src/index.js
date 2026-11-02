@@ -318,13 +318,24 @@ export const ringB = ()=>{
         },
         modeling.transforms.translateX(cr+ width,r0_))
         
-       // return Ring
+        //return rss
         for (let i =0;i<m;i++){
           rss.push(modeling.transforms.rotateZ(i*ragX*gear.radX, r3_1))
         }
-        rss.push(Ring, modeling.transforms.translateZ(height+l,r4,r4_1))
+        rss.push(Ring,modeling.transforms.translateZ(
+          height+l,
+          r4,
+          r4_1
+        ))
     return rss
 }
+const bakeTransform = (geo) => {
+  const { geom3 } = modeling.geometries;
+  const baked = geom3.create(geom3.toPolygons(geo));
+  // 保留颜色等属性（可选）
+  baked.color = geo.color;
+  return baked;
+};
 const ringBLib = (t=0)=>{
     const {polygon} = modeling.primitives
     const rAr =getRingAr()+width+slit;

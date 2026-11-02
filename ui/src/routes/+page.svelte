@@ -132,7 +132,7 @@ const updateGeometrys = (data:any)=>{
   //console.log("update",data)
   const geo = csg2Geo(data,{} )
   if (geo){ 
-    console.log(geo);
+    //console.log(geo);
     (()=>{
       for (const g of geometrys){
         if (g.tag===data.tag){
