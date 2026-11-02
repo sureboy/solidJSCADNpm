@@ -77,8 +77,7 @@ startHttp(Config,(app)=>{
         if ( tmpMsg.length>0 ){
           for(let m of tmpMsg ){
             res.write(`data: ${m}\n\n`)
-          }
-          
+          } 
           res.end()
           return;
         }

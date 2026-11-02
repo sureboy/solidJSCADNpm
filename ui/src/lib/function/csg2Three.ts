@@ -8,9 +8,10 @@ import {
     LineSegments,
     Color,
     Vector3,
+    Matrix4
 } from "three";  
 import type {
-  MeshPhongMaterialParameters,LineBasicMaterialParameters,TypedArray,Matrix4,Matrix4Tuple} from "three"  ;
+  MeshPhongMaterialParameters,LineBasicMaterialParameters,TypedArray,Matrix4Tuple} from "three"  ;
 export interface csgObj {
     polygons?:TypedArray
     list?:TypedArray,
@@ -43,7 +44,7 @@ materials.instance = materials.mesh ;// todo support instances for lines
 
 export function csg2Geo(obj:csgObj ,{ smooth = false }){
  
-    const { vertices, indices, normals, color, colors, isTransparent = false, opacity } = obj;
+    const { vertices,transforms, indices, normals, color, colors, isTransparent = false, opacity } = obj;
     const type = obj.type || 'mesh';
     //console.log(obj)
     const materialDef = materials[type];
@@ -93,9 +94,13 @@ export function csg2Geo(obj:csgObj ,{ smooth = false }){
     if(smooth) {geometry = toCreasedNormals( geometry, Math.PI / 10);}
     if (colors) {geometry.setAttribute('color', new BufferAttribute(colors, isTransparent ? 4 : 3));}
     //geometry.computeVertexNormals();
-    return { geo:geometry,type,material}
+
+    //transforms = 
+    return { geo:geometry,type,material,transforms:jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(transforms
+      ? transforms
+      :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toArray()}
 }
- 
+  const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
 export function CSG2Three(obj:csgObj , { smooth = false }) {
     //const obj = CSG2Vertices(csg)
     const { vertices, indices, normals, color, colors, isTransparent = false, opacity } = obj;

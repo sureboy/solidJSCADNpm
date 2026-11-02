@@ -1,5 +1,6 @@
 import modeling from "@jscad/modeling";
 
 export const main = ()=>{
-    return modeling.primitives.sphere({radius:12})
+    //modeling.geometries.geom3
+    return [modeling.primitives.sphere({radius:2}),modeling.primitives.circle({radius:10})]
 }

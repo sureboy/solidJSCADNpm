@@ -219,6 +219,7 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
   let indOffset = 0;
 
   for (const poly of csg.polygons) {
+    //console.log(poly)
     const arr = poly.vertices;
     const normal = calculateNormal(arr);
     const len = arr.length;
@@ -239,7 +240,7 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
       indices[indOffset++] = first + i;
     }
   }
-
+  //console.log( csg.transforms)
   return {
     type: "mesh",
     vertices,
@@ -294,7 +295,6 @@ const CSG2Vertices_ = (csg: Geom3): MeshData => {
       indices[indOffset++] = first + i - 1;  // 第二个顶点（交换位置）
     }
   }
-
   return {
     type: "mesh",
     vertices,

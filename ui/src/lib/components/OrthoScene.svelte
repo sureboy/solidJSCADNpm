@@ -5,7 +5,9 @@ import {
     Vector3,
     OrthographicCamera,
     PerspectiveCamera, 
-     WebGLRenderer
+    WebGLRenderer,
+    Matrix4
+    //normalMaterial: THREE.MeshNormalMaterial;
 } from 'three';
 import {type ThrelteContext } from '@threlte/core'
 export type ConfigType = {
@@ -28,6 +30,7 @@ let Controls :Orb|undefined = $state(undefined) ;
 //let rSize  = $derived(()=>{
 //  return useT.size.current
 //})
+// const jscadToThreeRotation = new Matrix4().makeRotationX(-Math.PI / 2);
 let QviewDistance = 15;
 //let isOrthographic = $state(false);
 //let cameraFov:number = 1;// =cameraP.fov;
@@ -117,6 +120,7 @@ export const refreshCamera = (direction:string,isOrthographic:boolean,MaxSize:Ve
 }
 </script>
 <script lang="ts">
+import { MeshNormalMaterial } from 'three';
   import { T,useThrelte } from '@threlte/core'
   import { OrbitControls } from '@threlte/extras' 
 //import {useThrelte} from "@threlte/core"
@@ -130,7 +134,7 @@ export const refreshCamera = (direction:string,isOrthographic:boolean,MaxSize:Ve
     getContext:any
     solidControlConfig:ConfigType, 
     geometrys:{
-      geometry:{type:string, material:any,geo:any}[], show:boolean,tag:string
+      geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string
     }[]
      
 } = $props() 
@@ -138,6 +142,8 @@ export const refreshCamera = (direction:string,isOrthographic:boolean,MaxSize:Ve
 onMount(()=>{ 
   getContext(Context) 
 }) 
+
+const normalMaterial = new MeshNormalMaterial({ flatShading: true });
 </script> 
 
 {#if solidControlConfig.isOrthographic}
@@ -171,12 +177,10 @@ onMount(()=>{
  
 {#each geometrys as {geometry,show}} 
   {#if show}
-    {#each geometry as {type,geo,material} } 
+    {#each geometry as {type,geo,material,transforms} } 
       {#if type==="mesh"} 
-      <T.Mesh geometry={geo} {material}  > 
-          {#if !solidControlConfig.Light}
-        <T.MeshNormalMaterial flatShading ></T.MeshNormalMaterial>
-          {/if}
+      <T.Mesh geometry={geo}  material={solidControlConfig.Light ? material : normalMaterial} matrix={transforms} matrixAutoUpdate={false}  > 
+       
       </T.Mesh>
       {:else if type ==="lines"}
       <T.Line geometry={geo} {material}></T.Line> 

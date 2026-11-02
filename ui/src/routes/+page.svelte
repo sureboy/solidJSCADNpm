@@ -19,7 +19,7 @@ import {
 
 import { dev } from '$app/env';
 let geometrys:{
-  geometry:{type:string, material:any,geo:any}[], show:boolean,tag:string
+  geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string
 }[] = 
   $state([])
 let stopTicker = $state(false) 
@@ -132,11 +132,11 @@ const updateGeometrys = (data:any)=>{
   //console.log("update",data)
   const geo = csg2Geo(data,{} )
   if (geo){ 
+    console.log(geo);
     (()=>{
       for (const g of geometrys){
         if (g.tag===data.tag){
-          g.geometry.push(geo) 
-           
+          g.geometry.push(geo)  
           return
         }
       }
@@ -189,8 +189,7 @@ const runEvent =  (main:string="main")=>{
         } 
       }
       updateGeometrys(newData)
-    }
-     
+    } 
  /*
     if (newData.tmpPart){
       fetch(rootUrl+'/tmp/'+newData.tmpPart).then(res=>{
