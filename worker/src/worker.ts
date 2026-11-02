@@ -4,9 +4,9 @@ import {postMain,onMainMessage,getTransferableList} from '#lib/utils/workerLib.t
 //import { fileURLToPath } from 'url';
 import { pathToFileURL } from 'url';
 import {getCsgObjArray} from '#lib/function/csgChange.ts' 
-import {createStorage} from '#lib/storage-adapter/factory.ts'
-import  { StorageAdapter   } from '#lib/storage-adapter/adapter.ts';
-import {sendGeometry} from '#lib/function/geoSend.ts'
+//import {createStorage} from '#lib/storage-adapter/factory.ts'
+//import  { StorageAdapter   } from '#lib/storage-adapter/adapter.ts';
+//import {sendGeometry} from '#lib/function/geoSend.ts'
 import { defaultConfig,type baseConfig } from '#lib/utils/baseConfig.ts';
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //import { fileURLToPath } from 'url';
@@ -26,7 +26,7 @@ onMainMessage(async (event) => {
   if (event.option){
     Object.assign(defaultOption.option,event.option)
   } 
-  if (event.name && event.main) {
+  if (event.name && event.tag) {
     const target = path.resolve(defaultConfig.srcDir  , event.name);
     let fileName = pathToFileURL(target).href 
     //console.log(event)
@@ -48,17 +48,17 @@ onMainMessage(async (event) => {
       }
     }) 
     const list = [...fnlistSet]
-    let main = event.main
-    if (!fnlistSet.has(main)){
+    let tag = event.tag
+    if (!fnlistSet.has(tag)){
       if (!fnlistSet.has("main"))
-        main = list[0]
+        tag = list[0]
       else
-        main = "main"
+        tag = "main"
     }
-    postMain({list ,opt,main}) 
+    postMain({list ,opt,tag}) 
     //defatuleOption.main = fnlistSet.has(defatuleOption.main)?defatuleOption.main:mainList[0]
     try{
-      let db = mod[ main ](Object.assign(opt,defaultOption.option))
+      let db = mod[ tag ](Object.assign(opt,defaultOption.option))
       if (db.then){
         db = await db
       }
@@ -67,7 +67,8 @@ onMainMessage(async (event) => {
         //console.log(msg)
         if (!msg.index)return; 
         let transfer:Transferable[] = []
-        msg.tag = main
+        msg.tag = tag
+        //msg.main = main
         getTransferableList(msg,transfer)
         postMain(msg,transfer)
         /*

@@ -17,7 +17,7 @@ export const moduleInit = (geometrys: {
 }[],  opt:{  
       Clickhandle?:(checked: boolean, value: string)=>void,
   list:string[],
-  main:string,
+  tag:string,
   key?:string,
   option?:{[k:string]:any}, 
 } )=>{ 
@@ -29,10 +29,10 @@ export const moduleInit = (geometrys: {
   //basename = opt.basename
   //console.log("change Main name",solidName)
   opt.list.forEach(m=>{
-    let checked = m===opt.main
+    let checked = m===opt.tag
     if (!checked)
       for (const g of geometrys){
-        if (g.tag ===m){
+        if (g.tag ===m && g.show){
           checked = true
           break;
         }

@@ -4,7 +4,7 @@ import {  type baseConfig} from '#lib/utils/baseConfig.ts'
 import {binaryReplacer} from '#lib/utils/workerLib.ts'; 
 import { Readable } from "node:stream";
 //import type { Response as ExpressResponse } from 'express';
-import path from 'path';
+//import path from 'path';
 import {maxMtimeRecursive} from '#lib/utils/walkFile.ts'
 import fs from 'fs';
 import  { pipeline }  from "stream/promises" ;
@@ -14,7 +14,9 @@ import  { pipeline }  from "stream/promises" ;
 const Config:baseConfig = {srcDir:process.cwd(),Port:3000} 
 const worker = startWorker(Config)
 const tmp = new Map<string,ArrayBuffer>()
+const tmpJson = new Map<string,string[]>()
 //let tmpMain = "main"
+let lastTime:Number = 0
 function* chunks(buf: Buffer, size = 64 * 1024) {
   for (let i = 0; i < buf.length; i += size) {
     yield buf.subarray(i, i + size);
@@ -28,8 +30,8 @@ startHttp(Config,(app)=>{
     const entry = tmp.get(encodeURIComponent(token))
     if (!entry) {
       return res.status(404).end(); // 不存在或已过期，统一 404
-    }
-     const baseHeaders = {
+    } 
+    const baseHeaders = {
       "Content-Type":   "application/octet-stream",
       "Content-Disposition": `attachment; filename="${encodeURIComponent(token)}"`,
       "Cache-Control": "no-store, must-revalidate",
@@ -57,8 +59,8 @@ startHttp(Config,(app)=>{
     }
     
   })
-  app.get("/run/:main",async (req,res)=>{
-    let { main } = req.params;
+  app.get("/run/:tag",async (req,res)=>{
+    let { tag } = req.params;
     //if (!main)main="main"
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -66,15 +68,37 @@ startHttp(Config,(app)=>{
     try {  
       const packageConfig = JSON.parse(fs.readFileSync('./package.json','utf-8'));
       const REL =packageConfig.main || './index.js';
-      const handMsg = (msg:any)=>{  
+      const time = await maxMtimeRecursive(Config.srcDir)
+      const title = REL+tag
+      //console.log(title,lastTime)
+      let tmpMsg:string[] =[]
+      if (lastTime ===time ){
+        tmpMsg = tmpJson.get(title) ||[]
+        if ( tmpMsg.length>0 ){
+          for(let m of tmpMsg ){
+            res.write(`data: ${m}\n\n`)
+          }
+          
+          res.end()
+          return;
+        }
+      }else{
+        lastTime = time
+        tmpJson.clear()
+        tmp.clear()
+      } 
+      if (tmpMsg.length===0)
+        tmpJson.set(title,tmpMsg)
+      const handMsg = (msg:any)=>{
+        //console.log(msg)
         if (msg.index){
           //tmp.set(`${REL+currMainFunctionName}${msg.index}`,msg)
-          res.write(`data: ${JSON.stringify(
+          const jsonDB = JSON.stringify(
             msg,(k:string,v:any)=>{
             const val = binaryReplacer(v)
             try{
               if (val.__type){
-                const tmpName = encodeURIComponent(`${REL+msg.main}${msg.index}${k}`)
+                const tmpName = encodeURIComponent(`${REL+msg.tag}${msg.index}${k}`)
                 tmp.set(tmpName,val.data)
                 return {__type:val.__type,url:"/tmp/"+tmpName}
               }
@@ -82,16 +106,21 @@ startHttp(Config,(app)=>{
               //console.error(e)
             } 
             return val 
-          })}\n\n`)
+          })
+          tmpMsg.push(jsonDB)
+          //tmp.set(REL+msg.main,jsonDB)
+          res.write(`data: ${jsonDB}\n\n`)
         }else{
-          res.write(`data: ${JSON.stringify(msg)}\n\n`)
+          const jsonDB = JSON.stringify(msg)
+          tmpMsg.push(jsonDB)
+          res.write(`data: ${jsonDB}\n\n`)
         } 
         if (msg.end){
           worker.removeListener("message",handMsg)
           res.end()
         } 
       } 
-      postMessage({name:REL,main,time:await maxMtimeRecursive(Config.srcDir)})
+      postMessage({name:REL,tag,time})
       worker.addListener("message",handMsg) 
     } catch (err:any) {
         console.error(err)
