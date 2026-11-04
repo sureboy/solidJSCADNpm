@@ -60,8 +60,15 @@ export function createCheckbox<V extends string = string>(
       onChange(input.checked, value, event);
     });
   }
-
-  label.append(input, document.createTextNode(` ${text}`));
+  const TextNode = document.createElement('button')
+  TextNode.textContent = text
+  TextNode.onclick = (e:any)=>{
+    if (onChange) {
+      onChange(true, `${value}?reload=true` as V, e);
+    }
+  }
+  label.append(input, TextNode)
+  //label.append(input, document.createTextNode(` ${text}`));
   return label;
 }
 

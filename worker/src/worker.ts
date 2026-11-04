@@ -65,7 +65,7 @@ onMainMessage(async (event) => {
       //let index = 0
       //console.log(db)
       await getCsgObjArray(db,async (msg: any)=>{
-        console.log(msg)
+        //console.log(msg)
         if (!msg.index)return; 
         let transfer:Transferable[] = []
         msg.tag = tag

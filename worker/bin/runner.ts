@@ -25,8 +25,8 @@ function* chunks(buf: Buffer, size = 64 * 1024) {
 startHttp(Config,(app)=>{
   app.get("/tmp/:token",async (req,res)=>{
     //console.log(req)
-    const { token } = req.params;
-    
+    const { token  } = req.params;
+ 
     const entry = tmp.get(encodeURIComponent(token))
     if (!entry) {
       return res.status(404).end(); // 不存在或已过期，统一 404
@@ -61,7 +61,8 @@ startHttp(Config,(app)=>{
   })
   app.get("/run/:tag",async (req,res)=>{
     let { tag } = req.params;
-    //if (!main)main="main"
+    //const { reload } = req.query;  
+    //console.log(reload)
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');

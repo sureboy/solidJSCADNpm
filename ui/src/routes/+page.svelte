@@ -62,55 +62,9 @@ const Clickhandle=(k:string|{[key:string]:any}|null)=>{
   if (k.id in solidControlConfig){
       (solidControlConfig as {[key:string]:any})[k.id] = k.checked
   }
-} 
-// import {  PUBLIC_API_BASE } from '$app/env/public';
-//    let eventSource: EventSource;
+}  
 const rootUrl = dev?"http://localhost:3000":""
-/*
-function handleMeshMessage(data:{msg:{db:any},run:string}) {
-  const frame = decodeFrame(data.msg.db);
-  if (!frame) return;
 
-  const { msgId, seq, totalLen, attrId, offset, payload, isLast, isMeta } = frame;
-
-  // 基本校验
-  if (totalLen === 0 || totalLen > MAX_MESSAGE_SIZE) {
-    console.warn(`[rtc] msg ${msgId} invalid totalLen ${totalLen}`);
-    return;
-  }
-  if (payload.byteLength > MAX_PAYLOAD) {
-    console.warn(`[rtc] msg ${msgId} payload too large ${payload.byteLength}`);
-    return;
-  }
-
-  // meta 帧
-  if (isMeta) {
-    let meta: GeometryMeta;
-    try {
-      meta = decodeMeta(payload);
-    } catch (e) {
-      console.error(`[rtc] msg ${msgId} meta parse failed`, e);
-      return;
-    } 
-    const st = onMeta(msgId, totalLen, meta); 
-    streams.set(msgId,st)
-    geometrys.push( {tag:data.run,show:true,...st}) 
-    return;
-  }
-
-  // 数据帧
-  const st = streams.get(msgId);
-  if (!st) {
-    console.warn(`[rtc] msg ${msgId} data before meta`);
-    return;
-  }
-  onDataFrame(st, attrId, offset, payload);
-  if (isComplete(st)) {
-    finalizeGeometry(st);
-    setMaxSize(st.geometry)
-    disposeStream(st.msgId);
-  }
-}*/
 const setMaxSize = (geometry:BufferGeometry)=>{
   geometry.computeBoundingBox();
   const box = geometry.boundingBox;

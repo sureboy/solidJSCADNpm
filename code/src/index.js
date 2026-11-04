@@ -34,9 +34,10 @@ Motor.wheel = {
     width,
     slit,
     ringA:miniWheelopt.gA.ring,
-    ringAr:getRingAr(),
+    ringAr:getRingAr(), 
     layer:height
 }
+
 export const sunA = (o=2.2)=>{
   const baseR = miniWheelopt.gA.modul*miniWheelopt.gA.sun/2+miniWheelopt.gA.modul*2
     return [
@@ -65,7 +66,7 @@ export const sunA = (o=2.2)=>{
     //  modeling.primitives.cylinderElliptic({height:height/2,center:[0,0,height/4],startRadius:[o/2,o/2],endRadius:[o ,o ]})
     ),),),
   
-   /*
+    /*
       modeling.extrusions.extrudeLinear({height:height},
         modeling.booleans.subtract(
         modeling.primitives.circle({
@@ -73,10 +74,11 @@ export const sunA = (o=2.2)=>{
         ),
         modeling.primitives.circle({
           radius:o/2}
-        )
+        ) 
        )
       ),
       */
+                
       gear.getGearEasy({
         bohrung : o,
         height:height,
@@ -84,8 +86,9 @@ export const sunA = (o=2.2)=>{
         modul:miniWheelopt.gA.modul,
         gearNum:miniWheelopt.gA.sun,
         dif:0,txx:heightSlit,txxEnd:heightSlit})
-      ]
-}
+    ]
+} 
+      
 export const sunB = ()=>{
   const h = height+heightSlit/2
   const g = gear.getGear({bohrung : 0,
@@ -93,6 +96,8 @@ export const sunB = ()=>{
     spiel:0.1,
     modul:miniWheelopt.gB.modul,
     gearNum:miniWheelopt.gB.sun, dif:0 ,txx:heightSlit,txxEnd:heightSlit*2})
+    s 
+
   //  if (miniWheelopt.gB.sun<miniWheelopt.gA.sun)
        // return modeling.transforms.rotateZ(,g)
   return g
@@ -322,11 +327,13 @@ export const ringB = ()=>{
         for (let i =0;i<m;i++){
           rss.push(modeling.transforms.rotateZ(i*ragX*gear.radX, r3_1))
         }
-        rss.push(Ring,modeling.transforms.translateZ(
+        rss.push(Ring,
+          modeling.transforms.translateZ(
           height+l,
           r4,
           r4_1
-        ))
+        )
+      )
     return rss
 }
 const bakeTransform = (geo) => {
