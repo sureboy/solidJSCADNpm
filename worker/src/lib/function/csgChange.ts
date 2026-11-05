@@ -31,7 +31,10 @@ interface RawGeometry {
 // ============================================================================
 // 转换结果类型
 // ============================================================================
-
+import {
+   
+    Matrix4
+} from "three";  
 interface MeshData {
   type: "mesh";
   vertices: Float32Array;
@@ -199,6 +202,7 @@ export const getCsgObj =async (v:  Geo,index:number, back?: BackCallback):Promis
 /**
  * 将 geom3 转换为 MeshData（顶点、法线、索引）
  */
+const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
 const CSG2Vertices = (csg: Geom3): MeshData => {
   // 预计算顶点和索引数量
   let vertexCount = 0;
@@ -240,14 +244,17 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
       indices[indOffset++] = first + i;
     }
   }
-  //console.log( csg.transforms)
+  //console.log( csg.transforms) 
+  const transforms=  jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(
+    (csg.transforms ? csg.transforms :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as []
+  )).toArray()
   return {
     type: "mesh",
     vertices,
     indices,
     normals,
     color: csg.color,
-    transforms: csg.transforms,
+    transforms ,
   };
 };
 

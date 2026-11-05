@@ -31,33 +31,33 @@ onMainMessage(async (event) => {
     let fileName = pathToFileURL(target).href 
     //console.log(event)
     //await storage?.deleteDirectory(path.join("", event.name))
-    const  mod = await import(`${fileName}?v=${event.time || Date.now()}`); 
-    const fnlistSet = new Set<string>() 
-    const fnlist = Object.keys(mod)
-    let opt:{[k:string]:any}={}
-    fnlist.forEach(l=>{
-      if (l==="default"){
-        Object.assign(opt,mod[l])
-        //opt['def'] = src[l]
-        return
-      }
-      if (typeof mod[l] ==="function"){
-        fnlistSet.add(l)
-      }else{
-        opt[l] = mod[l]
-      }
-    }) 
-    const list = [...fnlistSet]
-    let tag = event.tag
-    if (!fnlistSet.has(tag)){
-      if (!fnlistSet.has("main"))
-        tag = list[0]
-      else
-        tag = "main"
-    }
-    postMain({list ,opt,tag}) 
-    //defatuleOption.main = fnlistSet.has(defatuleOption.main)?defatuleOption.main:mainList[0]
     try{
+      const  mod = await import(`${fileName}?v=${event.time || Date.now()}`); 
+      const fnlistSet = new Set<string>() 
+      const fnlist = Object.keys(mod)
+      let opt:{[k:string]:any}={}
+      fnlist.forEach(l=>{
+        if (l==="default"){
+          Object.assign(opt,mod[l])
+          //opt['def'] = src[l]
+          return
+        }
+        if (typeof mod[l] ==="function"){
+          fnlistSet.add(l)
+        }else{
+          opt[l] = mod[l]
+        }
+      }) 
+      const list = [...fnlistSet]
+      let tag = event.tag
+      if (!fnlistSet.has(tag)){
+        if (!fnlistSet.has("main"))
+          tag = list[0]
+        else
+          tag = "main"
+      }
+      postMain({list ,opt,tag})  
+    
       let db = mod[ tag ](Object.assign(opt,defaultOption.option))
       if (db.then){
         db = await db

@@ -96,9 +96,9 @@ export function csg2Geo(obj:csgObj ,{ smooth = false }){
     //geometry.computeVertexNormals();
 
     //transforms = 
-    return { geo:geometry,type,material,transforms:jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(transforms
-      ? transforms
-      :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toArray()}
+    return { geo:geometry,type,material,
+      transforms//:jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(transforms ? transforms :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toArray()
+    }
 }
   const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
 export function CSG2Three(obj:csgObj , { smooth = false }) {
