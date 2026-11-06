@@ -1,5 +1,11 @@
+<script lang="ts" module>
+let DialogDiv:HTMLDivElement 
+export const getDialogDiv = ()=>{
+  return DialogDiv
+}
+</script>
 <script lang="ts"> 
- 
+import Dialog from '#lib/components/Dialog.svelte';  
 const {
   
   children,
@@ -21,3 +27,7 @@ const {
 {@render children?.()} 
  
 </div>
+
+<Dialog title = {""}  >
+  <div bind:this={DialogDiv}>test</div> 
+</Dialog>

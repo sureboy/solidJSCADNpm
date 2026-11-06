@@ -1,5 +1,8 @@
 <script lang="ts" module> 
 import {createVerticalCheckbox} from "#lib/function/checkbox.ts"
+import {openModal,closeModal} from '#lib/components/Dialog.svelte';  
+import {ShowSubmit} from "#lib/utils/jsonToForm.ts"
+import {getDialogDiv} from '#lib/components/Menu.svelte';  
 let menu:HTMLElement
 let tmpDiv:HTMLButtonElement 
 let solidName:HTMLElement;
@@ -21,13 +24,9 @@ export const moduleInit = (geometrys: {
   key?:string,
   option?:{[k:string]:any}, 
 } )=>{ 
-  if (menu)menu.innerHTML="" 
- 
-  //Details.style.display="inline"
+  if (menu)menu.innerHTML=""   
   if (solidName)solidName.textContent = "main"
-  tmpDiv.style.display = 'inline'
-  //basename = opt.basename
-  //console.log("change Main name",solidName)
+  tmpDiv.style.display = 'inline' 
   opt.list.forEach(m=>{
     let checked = m===opt.tag
     if (!checked)
@@ -41,25 +40,7 @@ export const moduleInit = (geometrys: {
     const box = createVerticalCheckbox({checked,name:m,text:m,value:m,onChange:(c,v)=>{
  
       opt.Clickhandle?.(c,v)
-    }})
-    
-    /*
-    const btn = tmpDiv.cloneNode(true) as HTMLButtonElement
-    //div.style.display='inline'
-    //div.disabled=!opt.show
-    btn.onclick = (e)=>{*/
-      /*
-      geometrys.forEach((g)=>{
-        if (g.tag!==m){
-          g.show=false
-        }else{
-          g.show=true
-        }
-      })*/
-     /* solidName.textContent=m
-      opt.Clickhandle?.(m)
-    }
-    btn.textContent = m;*/
+    }}) 
     menu.appendChild(box)
   }) 
   if (opt.option){
@@ -67,7 +48,23 @@ export const moduleInit = (geometrys: {
     btn.onclick = (e)=>{
       console.log(opt.option)
  
-      //openModal()
+      ShowSubmit(getDialogDiv(),opt.option,(db)=>{ 
+        opt.option = Object.assign(opt.option||{},db)
+        console.log(db,opt.option)
+        //const msg = {name:"./index.js",onlyInit:true,update:opt.key,type:"workerInit",...opt}
+        //console.log(msg)
+         
+        //DirInfo?.workerHandle?.(msg)  
+        //DirInfo?.channeldb?.postMessage(msg)
+        //}
+        closeModal()
+        /*
+        getWorker().then(w=>{ 
+          w.postMessage({name:"./index.js",...opt})  
+        })*/
+              
+      })
+      openModal()
     }
     btn.textContent = "Option";
     menu.appendChild(btn)

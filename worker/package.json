@@ -28,6 +28,7 @@
     "vitest": "^5.0.5"
   },
   "dependencies": {
+    "@jscad/modeling": "^2.13.0",
     "cors": "^2.8.6",
     "error-stack-parser": "^2.1.4",
     "es-module-lexer": "^3.0.4",

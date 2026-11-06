@@ -100,7 +100,7 @@ const updateGeometrys = (data:any)=>{
     setMaxSize(geo.geo) 
   }  
 }
-const runEvent =  (main:string="main")=>{
+const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
   const eventSource = new EventSource(rootUrl+'/run/'+main);
   //fetch("http://localhost:3000/run")
   eventSource.onopen = ()=>{
@@ -155,18 +155,29 @@ const runEvent =  (main:string="main")=>{
       })
     }*/
     if (newData.list){ 
+      console.log(newData)
       moduleInit(
         geometrys,
       Object.assign({ 
         Clickhandle:(checked: boolean, value: string)=>{
           if (checked){
             (()=>{
-              for (const g of geometrys){
-                if (g.tag ===value){
-                  g.show=true
-                  return
+              const i = value.indexOf('?')
+              let v = value
+              if (i===-1){
+                for (const g of geometrys){
+                  if (g.tag ===value){
+                    g.show=true
+                    return
+                  }
                 }
+              }else{
+                v = value.slice(0,i)
               }
+              
+              if (window.localStorage.getItem("main") !== v)
+                window.localStorage.setItem("main",v)
+              
               runEvent(value)
             })()
           }else{
@@ -176,8 +187,7 @@ const runEvent =  (main:string="main")=>{
                 return
               }
             }
-          }
-          
+          }          
         },
         key:"",
         path:"test",
@@ -207,7 +217,7 @@ const runEvent =  (main:string="main")=>{
   //  }
 }
 onMount(() => {  
-  runEvent("main")
+  runEvent()
 });
 function switchView(direction:string) {
   if (direction==="camera"){ 

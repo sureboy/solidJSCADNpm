@@ -3,6 +3,9 @@
 // ============================================================================
 // 几何对象类型定义（基于运行时检查的特征）
 // ============================================================================
+import modeling from "@jscad/modeling";
+const { geom3 } = modeling.geometries;
+//const { geom3 } = modeling.geometries;
 type Geo = Geom3|Geom2|Path2|RawGeometry   |Promise<RawGeometry>
 interface Geom3 {
   polygons: Array<{ vertices: number[][] }>;
@@ -203,8 +206,12 @@ export const getCsgObj =async (v:  Geo,index:number, back?: BackCallback):Promis
  * 将 geom3 转换为 MeshData（顶点、法线、索引）
  */
 const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
-const CSG2Vertices = (csg: Geom3): MeshData => {
+const CSG2Vertices = (csg_: Geom3): MeshData => {
   // 预计算顶点和索引数量
+
+  const csg = geom3.create(geom3.toPolygons(csg_));
+    // 保留颜色等属性（可选）
+    csg.color =  csg_.color;
   let vertexCount = 0;
   let indexCount = 0;
   for (const poly of csg.polygons) {
@@ -213,7 +220,7 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
   }
 
   const vertices = new Float32Array(vertexCount * 3);
-  const normals = new Float32Array(vertexCount * 3);
+  //const normals = new Float32Array(vertexCount * 3);
   const indices = vertexCount > 65535 
     ? new Uint32Array(indexCount) 
     : new Uint16Array(indexCount);
@@ -225,14 +232,14 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
   for (const poly of csg.polygons) {
     //console.log(poly)
     const arr = poly.vertices;
-    const normal = calculateNormal(arr);
+    //const normal = calculateNormal(arr);
     const len = arr.length;
     const first = vertexIndex;
 
     // 写入顶点和法线
     for (let i = 0; i < len; i++) {
       vertices.set(arr[i], vertOffset);
-      normals.set(normal, vertOffset);
+      //normals.set(normal, vertOffset);
       vertOffset += 3;
       vertexIndex += 1;
     }
@@ -245,14 +252,14 @@ const CSG2Vertices = (csg: Geom3): MeshData => {
     }
   }
   //console.log( csg.transforms) 
-  const transforms=  jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(
+  const transforms=  jscadToThreeRotation.clone().toArray()/*.multiply(new Matrix4().fromArray(
     (csg.transforms ? csg.transforms :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as []
-  )).toArray()
+  )).toArray()*/
   return {
     type: "mesh",
     vertices,
     indices,
-    normals,
+    normals:undefined,
     color: csg.color,
     transforms ,
   };

@@ -56,7 +56,7 @@ onMainMessage(async (event) => {
         else
           tag = "main"
       }
-      postMain({list ,opt,tag})  
+      postMain({list ,option:opt,tag})  
     
       let db = mod[ tag ](Object.assign(opt,defaultOption.option))
       if (db.then){
