@@ -18,8 +18,14 @@ import {
 } from "three";  
 
 import { dev } from '$app/env';
+//    import { loadConfigFromFile } from 'vite';
 let geometrys:{
-  geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string
+  geometry:{
+    type:string, 
+    material:any,
+    geo:any,
+    transforms:any
+  }[], show:boolean,tag:string
 }[] = 
   $state([])
 let stopTicker = $state(false) 
@@ -101,6 +107,7 @@ const updateGeometrys = (data:any)=>{
   }  
 }
 const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
+  //console.log(main)
   const eventSource = new EventSource(rootUrl+'/run/'+main);
   //fetch("http://localhost:3000/run")
   eventSource.onopen = ()=>{
@@ -115,10 +122,8 @@ const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
   eventSource.onmessage = async (event) => {
     const newData = JSON.parse(event.data);
     //console.log(newData) 
-    if (newData.index){
-
-      for (const [k,v] of Object.entries(newData)){
-        
+    if (newData.index){ 
+      for (const [k,v] of Object.entries(newData)){ 
         if (v && typeof v ==="object"  && "url" in v && "__type" in v){
           try{
             const res  = await fetch(v.url as string) 
@@ -137,9 +142,8 @@ const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
           }catch(err){
             console.error(err)
             return
-            newData[k]=undefined
-          }
-        
+            //newData[k]=undefined
+          }        
         } 
       }
       updateGeometrys(newData)
@@ -155,11 +159,12 @@ const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
       })
     }*/
     if (newData.list){ 
-      console.log(newData)
+      //console.log(newData)
       moduleInit(
         geometrys,
       Object.assign({ 
         Clickhandle:(checked: boolean, value: string)=>{
+          //console.log("runEvent",value)
           if (checked){
             (()=>{
               const i = value.indexOf('?')
@@ -167,17 +172,18 @@ const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
               if (i===-1){
                 for (const g of geometrys){
                   if (g.tag ===value){
-                    g.show=true
+                    g.show = true
                     return
                   }
                 }
               }else{
                 v = value.slice(0,i)
-              }
-              
-              if (window.localStorage.getItem("main") !== v)
+                geometrys = []
+
+              } 
+              if (window.localStorage.getItem("main") !== v){
                 window.localStorage.setItem("main",v)
-              
+              } 
               runEvent(value)
             })()
           }else{

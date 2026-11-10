@@ -37,8 +37,7 @@ export const moduleInit = (geometrys: {
         }
       }  
  
-    const box = createVerticalCheckbox({checked,name:m,text:m,value:m,onChange:(c,v)=>{
- 
+    const box = createVerticalCheckbox({checked,name:m,text:m,value:m,onChange:(c,v)=>{ 
       opt.Clickhandle?.(c,v)
     }}) 
     menu.appendChild(box)
@@ -46,11 +45,12 @@ export const moduleInit = (geometrys: {
   if (opt.option){
     const btn = tmpDiv.cloneNode(true) as HTMLButtonElement
     btn.onclick = (e)=>{
-      console.log(opt.option)
- 
+      //console.log(opt.option) 
       ShowSubmit(getDialogDiv(),opt.option,(db)=>{ 
         opt.option = Object.assign(opt.option||{},db)
-        console.log(db,opt.option)
+        const v = (window.localStorage.getItem("main")||"main")+"?opt="+encodeURIComponent(JSON.stringify(opt.option)) 
+        //console.log(db,opt.option)
+        opt.Clickhandle?.(true,v)
         //const msg = {name:"./index.js",onlyInit:true,update:opt.key,type:"workerInit",...opt}
         //console.log(msg)
          

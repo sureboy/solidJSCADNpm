@@ -9,10 +9,12 @@ export const DefaultOpt = {
   height : 4, 
   heightSlit : 0.8 
 }
-export const sunA = (opt={})=>{
-  const {o,miniWheelopt,height,heightSlit}=Object.assign({o:2.2,...DefaultOpt},opt)
+export const sunA = (opt:any={})=>{
+  //console.log("sun",opt.DefaultOpt.miniWheelopt.gA)
+  const {o,miniWheelopt,height,heightSlit}=Object.assign({o:2.2,...DefaultOpt},opt.DefaultOpt||{})
+  //console.log("sun",miniWheelopt,opt.DefaultOpt)
   const baseR = miniWheelopt.gA.modul*miniWheelopt.gA.sun/2+miniWheelopt.gA.modul*2 
-  
+
   return [  
     modeling.transforms.translateZ(height, 
       modeling.extrusions.extrudeLinear({height:height/2},
@@ -22,7 +24,7 @@ export const sunA = (opt={})=>{
           ),
           modeling.primitives.circle({radius:o/2})
         )
-      ) , 
+      ),
       modeling.transforms.translateZ( height/2,  
         modeling.extrusions.extrudeLinear({height:height/2},
           modeling.booleans.subtract(

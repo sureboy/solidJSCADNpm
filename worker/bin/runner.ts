@@ -43,8 +43,7 @@ startHttp(Config,(app)=>{
     if (!range) {
       res.writeHead(200, { ...baseHeaders, "Content-Length":  entry.byteLength });
       if (isHead) return res.end(); 
-      try {
- 
+      try { 
         await pipeline(Readable.from(chunks(Buffer.from(entry))), res); 
       } catch (err: any) {
         console.log(err)
@@ -56,12 +55,17 @@ startHttp(Config,(app)=>{
         }
       }
       return;
-    }
-    
+    }    
   })
   app.get("/run/:tag",async (req,res)=>{
     let { tag } = req.params;
-    //const { reload } = req.query;  
+    const { opt,reload } = req.query;  
+    
+    let option = undefined
+    if (opt){
+      option = JSON.parse(decodeURIComponent(opt as string))
+      //console.log("opt get",opt)
+    }
     //console.log(reload)
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -73,7 +77,7 @@ startHttp(Config,(app)=>{
       const title = REL+tag
       //console.log(title,lastTime)
       let tmpMsg:string[] =[]
-      if (lastTime ===time ){
+      if (lastTime ===time && (!opt && !reload) ){
         tmpMsg = tmpJson.get(title) ||[]
         if ( tmpMsg.length>0 ){
           for(let m of tmpMsg ){
@@ -120,11 +124,11 @@ startHttp(Config,(app)=>{
           res.end()
         } 
       } 
-      postMessage({name:REL,tag,time})
+      postMessage({name:REL,tag,time,option,reload})
       worker.addListener("message",handMsg) 
     } catch (err:any) {
-        console.error(err)
-        res.status(500).json({ ok: false, error: err.message });
+      console.error(err)
+      res.status(500).json({ ok: false, error: err.message });
     }
   })
 },) 

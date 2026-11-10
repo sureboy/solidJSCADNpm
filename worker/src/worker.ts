@@ -24,8 +24,12 @@ onMainMessage(async (event) => {
     Object.assign(defaultConfig,event.baseConfig) 
   }
   if (event.option){
-    Object.assign(defaultOption.option,event.option)
+    defaultOption.option =Object.assign(defaultOption.option,event.option)
+    //console.log("opt",JSON.stringify(defaultOption.option),event.option)
   } 
+  if (event.reload){
+    defaultOption.option={}
+  }
   if (event.name && event.tag) {
     const target = path.resolve(defaultConfig.srcDir  , event.name);
     let fileName = pathToFileURL(target).href 
@@ -56,9 +60,12 @@ onMainMessage(async (event) => {
         else
           tag = "main"
       }
+
+      Object.assign(opt,defaultOption.option)
+      //console.log(opt.DefaultOpt.miniWheelopt.gA)
       postMain({list ,option:opt,tag})  
     
-      let db = mod[ tag ](Object.assign(opt,defaultOption.option))
+      let db = mod[ tag ](opt)
       if (db.then){
         db = await db
       }
