@@ -194,9 +194,13 @@ export const gear = {
             bo
         )
     },
-    getGear(option = {height:5,modul:0.5,gearNum:26,schraegungswinkel:20,eingriffswinkel:20,dif:-0.1,bohrung:0 }){ 
- 
-        const opt = this.init(option) 
+    getGear(option:any ={} ){ 
+        const defaultOpt = {
+            height:5,modul:0.5,
+            gearNum:26,schraegungswinkel:20,
+            eingriffswinkel:20,dif:-0.1,bohrung:0
+        }
+        const opt = this.init(Object.assign(defaultOpt,option)) 
         const{ height,bohrung,rb,txx,txxEnd} = opt 
         let al = this.gearAlone(opt ) 
         //return al
@@ -204,9 +208,7 @@ export const gear = {
         const txx1 = txx/Math.tan(this.radX*50) 
         const txx2 = (txxEnd) / Math.tan(this.radX*50) 
         const d1 = (rb-txx1)/rb 
-        const d2 = (rb-txx2)/rb 
-        //let al2 = modeling.transforms.scale([d1,d1],al) 
- 
+        const d2 = (rb-txx2)/rb  
         const o_1 =  modeling.extrusions.slice.fromSides(modeling.geometries.geom2.toSides(al )) 
         const o_2 =  modeling.extrusions.slice.fromSides(modeling.geometries.geom2.toSides(modeling.transforms.scale([d1,d1],al) ))  
         const o_3 =  modeling.extrusions.slice.fromSides(modeling.geometries.geom2.toSides(modeling.transforms.scale([d2,d2],al) ))  
@@ -214,9 +216,12 @@ export const gear = {
             modeling.extrusions.slice.transform(mat4.fromTranslation(mat4.create(), [0, 0,  0]), o_2) ,
             modeling.extrusions.slice.transform(mat4.fromTranslation(mat4.create(), [0, 0, txx]), o_1),
             modeling.extrusions.slice.transform(mat4.fromTranslation(mat4.create(), [0, 0, height-txxEnd]), o_1),
-            modeling.extrusions.slice.transform(mat4.fromTranslation(mat4.create(), [0, 0,  height]), o_3)
+            modeling.extrusions.slice.transform(mat4.fromTranslation(mat4.create(), [0, 0, height]), o_3)
         ] 
+        //console.log(o__)
+        
         const main = modeling.extrusions.extrudeFromSlices({numberOfSlices:4,callback:(progress:any, index:number, base:any) => {
+            //console.log(index,o__[index],"ext")
             return o__[index]
         }},o__[1])
         //return main
@@ -229,10 +234,13 @@ export const gear = {
             bo
         )
     },
-    getRing(option = {randbreite:1,height:5,gearNum:26,modul:0.5,schraegungswinkel:20,eingriffswinkel:20,dif:0.1 }){ 
-        const opt = this.initRing(option)  
+    getRing(option:any ={} ){
+        //const option =
+        const defaultOpt = Object.assign({
+            randbreite:1,height:5,gearNum:26,modul:0.5,schraegungswinkel:20,eingriffswinkel:20,dif:0.1 },option)
+        const opt = this.initRing(defaultOpt )  
         //console.log("ring B")
-        const {randbreite} = option
+        const {randbreite} = defaultOpt
         const {ra,gearNum,height,rb,txx} =  opt
         const {mat4} = modeling.maths
         const c = modeling.primitives.circle({radius:ra+randbreite,segments:gearNum*2 })

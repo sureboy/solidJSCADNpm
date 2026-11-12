@@ -12,7 +12,7 @@ import  { pipeline }  from "stream/promises" ;
 //const __dirname = process.cwd(); 
 //console.log(__dirname)
 const Config:baseConfig = {srcDir:process.cwd(),Port:3000} 
-const worker = startWorker(Config)
+let worker = startWorker(Config)
 const tmp = new Map<string,ArrayBuffer>()
 const tmpJson = new Map<string,string[]>()
 //let tmpMain = "main"
@@ -21,6 +21,11 @@ function* chunks(buf: Buffer, size = 64 * 1024) {
   for (let i = 0; i < buf.length; i += size) {
     yield buf.subarray(i, i + size);
   }
+}
+
+const reloadWorker = ()=>{
+  postMessage({shutdown:true})
+  worker = startWorker(Config) 
 }
 startHttp(Config,(app)=>{
   app.get("/tmp/:token",async (req,res)=>{
@@ -60,7 +65,7 @@ startHttp(Config,(app)=>{
   app.get("/run/:tag",async (req,res)=>{
     let { tag } = req.params;
     const { opt,reload } = req.query;  
-    
+
     let option = undefined
     if (opt){
       option = JSON.parse(decodeURIComponent(opt as string))
@@ -74,6 +79,7 @@ startHttp(Config,(app)=>{
       const packageConfig = JSON.parse(fs.readFileSync('./package.json','utf-8'));
       const REL =packageConfig.main || './index.js';
       const time = await maxMtimeRecursive(Config.srcDir)
+      //console.log(time,"->")
       const title = REL+tag
       //console.log(title,lastTime)
       let tmpMsg:string[] =[]
@@ -87,9 +93,13 @@ startHttp(Config,(app)=>{
           return;
         }
       }else{
-        lastTime = time
+        
         tmpJson.clear()
         tmp.clear()
+        if (lastTime !== time){
+          lastTime = time
+          reloadWorker() 
+        }        
       } 
       if (tmpMsg.length===0)
         tmpJson.set(title,tmpMsg)
@@ -124,7 +134,7 @@ startHttp(Config,(app)=>{
           res.end()
         } 
       } 
-      postMessage({name:REL,tag,time,option,reload})
+      postMessage({name:REL,tag,option,reload})
       worker.addListener("message",handMsg) 
     } catch (err:any) {
       console.error(err)

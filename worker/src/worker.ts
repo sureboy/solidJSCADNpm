@@ -20,6 +20,11 @@ const defaultOption = {
   //dist:new Map<string,any[]>()
 }
 onMainMessage(async (event) => {
+  if (event.shutdown) {
+      // 清理资源、关闭连接、刷日志
+      process.exit(0);
+      return
+  }
   if (event.baseConfig){
     Object.assign(defaultConfig,event.baseConfig) 
   }
@@ -36,7 +41,7 @@ onMainMessage(async (event) => {
     //console.log(event)
     //await storage?.deleteDirectory(path.join("", event.name))
     try{
-      const  mod = await import(`${fileName}?v=${event.time || Date.now()}`); 
+      const  mod = await import( fileName ); 
       const fnlistSet = new Set<string>() 
       const fnlist = Object.keys(mod)
       let opt:{[k:string]:any}={}

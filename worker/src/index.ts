@@ -15,6 +15,7 @@ export const startWorker = (opt:baseConfig)=>{
   worker = new Worker(workerPath) 
   new Promise<void>((resolve, reject) => {
     worker?.once('exit', (code:any) => {
+      //console.log("exit")
       if (code === 0) resolve();
       else reject(new Error(`worker exited with code ${code}`));
     });
