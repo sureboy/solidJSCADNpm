@@ -95,11 +95,7 @@ export const sunB = ()=>{
     height:h ,
     spiel:0.1,
     modul:miniWheelopt.gB.modul,
-    gearNum:miniWheelopt.gB.sun, dif:0 ,txx:heightSlit,txxEnd:heightSlit*2})
-    s 
-
-  //  if (miniWheelopt.gB.sun<miniWheelopt.gA.sun)
-       // return modeling.transforms.rotateZ(,g)
+    gearNum:miniWheelopt.gB.sun, dif:0 ,txx:heightSlit,txxEnd:heightSlit*2}) 
   return g
 }
 export const plant = (o=plantO,spielA =0.2,spielB = 0)=>{ 
@@ -412,7 +408,7 @@ const ringBLib = (t=0)=>{
     //return r2
     return modeling.booleans.subtract(r2,rss)
  
-  };
+};
 export const ringPlant = ()=>{
     const ringAr = getRingAr()
     const rAr =ringAr + width+slit*2
@@ -490,21 +486,19 @@ export const ringPlant = ()=>{
       ringBLib(0.3),
       bottom
     ]
-  };
-
-
-const   ringPlantFixBase = (o=plantO)=>{
-    //const o = 5;
-    const p = boFix(o)
-    const pie = gear.PI2/3 
-    const r = (miniWheelopt.gA.sun+miniWheelopt.gA.plant) /2 * miniWheelopt.gA.modul;// (this.Agear[0]+this.Agear[1])/2 * this.Agear[2]
-    return modeling.booleans.union([
-      //this.primitives.circle({ center: [0, 0], radius: r-1 }),
-      modeling.transforms.translate( gear.pol_zu_kart([r,pie*0]),p),
-      modeling.transforms.translate( gear.pol_zu_kart([r,pie*1]),p),
-      modeling.transforms.translate( gear.pol_zu_kart([r,pie*2]),p),
-    ])
-  }
+}; 
+const ringPlantFixBase = (o=plantO)=>{
+  //const o = 5;
+  const p = boFix(o)
+  const pie = gear.PI2/3 
+  const r = (miniWheelopt.gA.sun+miniWheelopt.gA.plant) /2 * miniWheelopt.gA.modul;// (this.Agear[0]+this.Agear[1])/2 * this.Agear[2]
+  return modeling.booleans.union([
+    //this.primitives.circle({ center: [0, 0], radius: r-1 }),
+    modeling.transforms.translate( gear.pol_zu_kart([r,pie*0]),p),
+    modeling.transforms.translate( gear.pol_zu_kart([r,pie*1]),p),
+    modeling.transforms.translate( gear.pol_zu_kart([r,pie*2]),p),
+  ])
+}
 export const ringPlantFix = (o=plantO)=>{ 
     const ringAr = getRingAr()
     const rAr =ringAr + width+slit*2

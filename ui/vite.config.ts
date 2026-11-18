@@ -3,6 +3,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	worker: {
+		format: 'es', // 将 Worker 的输出格式改为 ES 模块
+	},
 	plugins: [
 		sveltekit({
 			compilerOptions: {

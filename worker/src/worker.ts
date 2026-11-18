@@ -1,18 +1,8 @@
-import path from 'path';
-//import { Worker } from 'worker_threads';
-import {postMain,onMainMessage,getTransferableList} from '#lib/utils/workerLib.ts'; 
-//import { fileURLToPath } from 'url';
+import path from 'path';  
 import { pathToFileURL } from 'url';
-import {getCsgObjArray} from '#lib/function/csgChange.ts' 
-//import {createStorage} from '#lib/storage-adapter/factory.ts'
-//import  { StorageAdapter   } from '#lib/storage-adapter/adapter.ts';
-//import {sendGeometry} from '#lib/function/geoSend.ts'
-import { defaultConfig,type baseConfig } from '#lib/utils/baseConfig.ts';
-//const __dirname = path.dirname(fileURLToPath(import.meta.url));
-//import { fileURLToPath } from 'url';
-//import { dirname, join } from 'node:path';
-
-//let storage:StorageAdapter|undefined =undefined // = createStorage({baseDir:baseConfig.baseDir})
+import {postMain,onMainMessage,getTransferableList} from '#lib/utils/workerLib.ts';  
+import {getCsgObjArray} from '#lib/function/csgChange.ts'  
+import { defaultConfig,type baseConfig } from '#lib/utils/baseConfig.ts'; 
 const defaultOption = {
   //main:"main",
   option:{},
@@ -20,7 +10,10 @@ const defaultOption = {
   //dist:new Map<string,any[]>()
 }
 onMainMessage(async (event) => {
-  if (event.shutdown) {
+  if (event.test){
+    console.log(event)
+  }
+  if (event.shutdown && process) {
       // 清理资源、关闭连接、刷日志
       process.exit(0);
       return

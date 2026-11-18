@@ -8,7 +8,7 @@ export { startHttp } from './http.ts';
 //const worker = new Worker(pathToFileURL(workerPath));
 let worker:Worker|undefined = undefined
 
-export const startWorker = (opt:baseConfig)=>{ 
+export const startWorker = (opt?:baseConfig)=>{ 
   //startHttp()
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const workerPath = join(__dirname, 'worker.ts');

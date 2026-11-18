@@ -1,11 +1,15 @@
-const isNode = typeof process !== 'undefined' && !!process.versions?.node
-let nodeParentPort: any = null
-if (isNode) {
-  try {
-    nodeParentPort = (await import('node:worker_threads')).parentPort
-  } catch {}
-}
+ 
+let nodeParentPort:any = null;
 
+// 仅在 Node.js 环境下尝试导入
+if (typeof process !== 'undefined' && process.versions?.node) {
+  try {
+    const { parentPort } = await import('node:worker_threads');
+    nodeParentPort = parentPort;
+  } catch (e) {
+    console.warn('Node worker_threads not available', e);
+  }
+}
 export const postMain =(msg: any, transfer?: Transferable[]) => {
   if (nodeParentPort) {
     transfer ? nodeParentPort.postMessage(msg, transfer) : nodeParentPort.postMessage(msg)

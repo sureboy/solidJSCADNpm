@@ -148,16 +148,6 @@ const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
       }
       updateGeometrys(newData)
     } 
- /*
-    if (newData.tmpPart){
-      fetch(rootUrl+'/tmp/'+newData.tmpPart).then(res=>{
-        if (res.ok){
-          res.arrayBuffer().then(db=>{
-            handleMeshMessage({msg:{db},run:newData.run})
-          })
-        }
-      })
-    }*/
     if (newData.list){ 
       //console.log(newData)
       moduleInit(

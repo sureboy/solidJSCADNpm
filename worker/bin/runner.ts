@@ -27,7 +27,9 @@ const reloadWorker = ()=>{
   postMessage({shutdown:true})
   worker = startWorker(Config) 
 }
+console.log(Config)
 startHttp(Config,(app)=>{
+  
   app.get("/tmp/:token",async (req,res)=>{
     //console.log(req)
     const { token  } = req.params;

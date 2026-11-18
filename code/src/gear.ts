@@ -1,4 +1,5 @@
-import modeling from './lib/modeling.esm.js';
+//gear.ts
+import modeling from "@jscad/modeling";
 type InitOpt = {ra:number,rb:number,rho_ra:number,rho_r:number,rf:number}
 type baseOpt = {modul:number, eingriffswinkel:number,schraegungswinkel:number, schrittC:number,
 //randbreite:number,
@@ -147,7 +148,7 @@ export const gear = {
         point.push(...leftPoint)
         point.push(this.pol_zu_kart([rf,zahnbreite]))
         //let 
-        let p = modeling.primitives.line( point )
+        let p = modeling.primitives.line( point as any )
         p =modeling.transforms.rotateZ(-zahnbreite/2,p )
         if (dif !== 0 ) {
             let rb_ = (rb + dif)/rb 
