@@ -12,14 +12,14 @@ import Camera,{toggleCamera}  from "#lib/components/Camera.svelte";
 import MainMenu ,{moduleInit} from "#lib/components/MainMenu.svelte";  
 //import Exchange,{QRCodeHandle } from '#lib/components/Exchange.svelte';  
 import {type ThrelteContext } from '@threlte/core'
-import tsBlankSpace from "ts-blank-space";
+//import tsBlankSpace from "ts-blank-space";
 import { getWorker,terminateWorker } from '#lib/worker/globalWorker.ts';
 //import { getWorker,terminateWorker } from '#lib/worker/globalWorker.js';
 import {
   BufferGeometry,
 } from "three";  
 //import {postMain,onMainMessage,getTransferableList} from "worker/src/lib/utils/workerLib.js"
-import { dev } from '$app/env';
+//import { dev } from '$app/env';
 //    import { loadConfigFromFile } from 'vite';
 let geometrys:{
   geometry:{
@@ -70,7 +70,7 @@ const Clickhandle=(k:string|{[key:string]:any}|null)=>{
       (solidControlConfig as {[key:string]:any})[k.id] = k.checked
   }
 }  
-const rootUrl = dev?"http://localhost:3000":""
+let rootUrl =  "http://localhost:3000/src/" 
 
 const setMaxSize = (geometry:BufferGeometry)=>{
   geometry.computeBoundingBox();
@@ -107,112 +107,7 @@ const updateGeometrys = (data:any)=>{
     setMaxSize(geo.geo) 
   }  
 }
-const runEvent =  (main:string=window.localStorage.getItem("main")||"main")=>{
-  //console.log(main)
-  const eventSource = new EventSource(rootUrl+'/run/'+main);
-  //fetch("http://localhost:3000/run")
-  eventSource.onopen = ()=>{
-    //geometrys = []
-    solidControlConfig.GridSize=10
-    solidControlConfig.MaxSize.set(10,10,10)
-    showMenu=false
-    stopTicker=false
-    beginTime=Date.now() 
-    tickRunTime() 
-  }
-  eventSource.onmessage = async (event) => {
-    const newData = JSON.parse(event.data);
-    //console.log(newData) 
-    if (newData.index){ 
-      for (const [k,v] of Object.entries(newData)){ 
-        if (v && typeof v ==="object"  && "url" in v && "__type" in v){
-          try{
-            const res  = await fetch(v.url as string) 
-            if (!res.ok){
-              return
-            }
-            const data = await  res.arrayBuffer() 
-            if (v.__type!=="ArrayBuffer"){
-              const Ctor = (globalThis as any)[v.__type as string];
-              if (Ctor) {
-                newData[k] = new Ctor(data);
-                continue
-              }
-            }
-            newData[k] = data 
-          }catch(err){
-            console.error(err)
-            return
-            //newData[k]=undefined
-          }        
-        } 
-      }
-      updateGeometrys(newData)
-    } 
-    if (newData.list){ 
-      //console.log(newData)
-      moduleInit(
-        geometrys,
-      Object.assign({ 
-        Clickhandle:(checked: boolean, value: string)=>{
-          //console.log("runEvent",value)
-          if (checked){
-            (()=>{
-              const i = value.indexOf('?')
-              let v = value
-              if (i===-1){
-                for (const g of geometrys){
-                  if (g.tag ===value){
-                    g.show = true
-                    return
-                  }
-                }
-              }else{
-                v = value.slice(0,i)
-                geometrys = []
-
-              } 
-              if (window.localStorage.getItem("main") !== v){
-                window.localStorage.setItem("main",v)
-              } 
-              runEvent(value)
-            })()
-          }else{
-            for (const g of geometrys){
-              if (g.tag ===value){
-                g.show=false
-                return
-              }
-            }
-          }          
-        },
-        key:"",
-        path:"test",
-        //list:newData.mainList
-      },
-      newData ))
-   
-       
-    }
-  };
-  eventSource.onerror = (err) => {
-    //console.error('SSE 错误:', err); 
-    clearTimeout(refreshCameraTimer)
-    refreshCameraTimer = setTimeout(()=>{
-      refreshCameraInit(solidControlConfig  )
-    },1000) as any
-     
-    if (!showMenu) showMenu = true
-    eventSource?.close();
-    stopTicker=true
-
-  };
-  
-  
-  //return () => {
-  //      eventSource?.close();
-  //  }
-}
+ 
 onMount(() => {  
   getWorker((e)=>{
     //console.log(e)
@@ -246,7 +141,7 @@ onMount(() => {
               if (window.localStorage.getItem("main") !== v){
                 window.localStorage.setItem("main",v)
               } 
-              runEvent(value)
+              //runEvent(value)
             })()
           }else{
             for (const g of geometrys){
@@ -274,21 +169,15 @@ onMount(() => {
       stopTicker=true
     }
   }).then(w=>{
+    const u = new URL((window.location.hash.slice(1)||"/src/index.js"),rootUrl)
+    const i = u.href.lastIndexOf("/") 
     w.postMessage({
-      name:(window.location.hash.slice(1)||"/src/index.js"),
+      remote:{baseUrl:u.href.slice(0,i+1)},
+      name:"."+u.href.slice(i),
       tag:window.localStorage.getItem("main")||"main"})
   })
   
-  //postMessage({test:true,msg:"running ok"})
-  return
-    //console.log(window.location.hash.slice(1))
-    fetch(rootUrl+(window.location.hash.slice(1)||"/src/src/index.js")).then(res=>{
-        if (res.ok){
-            res.text().then(val=>{
-                console.log(val ,tsBlankSpace(val))
-            })
-        }
-    })
+  
   //runEvent()
 });
 function switchView(direction:string) {

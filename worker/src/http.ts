@@ -32,42 +32,7 @@ export const startHttp =async (opt:baseConfig,getApp:(app: express.Express)=>voi
     app.use(express.static(
         config.uiDir||
         join(dirname(fileURLToPath(import.meta.url)),"ui")  
-    ));
-    /*
-    if (config.tmpDir)
-    app.use('/tmp',express.static(config.tmpDir, { 
-        index: false, 
-        etag: false,          // 关闭 ETag（否则浏览器仍会发条件请求）
-        lastModified: false,  // 关闭 Last-Modified
-        setHeaders: (res, filePath) => {
-            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-            res.setHeader('Pragma', 'no-cache');        // 兼容 HTTP/1.0
-            res.setHeader('Expires', '0');              // 兼容老浏览器
-            res.setHeader('Surrogate-Control', 'no-store'); // 针对 CDN / 反向代理
-        }
-    }));*/
-    /*
-    app.get('/events', (req, res) => {
-        // 1. 设置 SSE 必需的响应头
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
-
-        // 2. 发送初始消息，告知客户端连接成功
-        //res.write('data: Connected to event stream\n\n');
-
-        // 3. 定期推送数据
-        const intervalId = setInterval(() => {
-            const data = { time: new Date().toTimeString(), message: 'Server update' };
-            // SSE 消息格式：`data: ${内容}\n\n`
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
-        }, 5000);
-
-        // 4. 客户端断开时，清理定时器，避免资源浪费
-        req.on('close', () => {
-            clearInterval(intervalId);
-        });
-    });*/
+    )); 
     app.listen(PORT, () => {
         const Ruri = `http://${ip.address()}:${PORT}`
         qrcode.toString(Ruri, { type: 'terminal'  }, (err, string) => {
@@ -75,5 +40,6 @@ export const startHttp =async (opt:baseConfig,getApp:(app: express.Express)=>voi
         });
         //    console.log(Ruri); 
         console.log(`Server running at ${Ruri}\n http://localhost:${PORT}`);
+        console.log(`Server running at ${Ruri}\n http://localhost:${PORT}/view.html#${config.index||"./src/index.js"}`);
     });
 }

@@ -11,7 +11,9 @@ import  { pipeline }  from "stream/promises" ;
 
 //const __dirname = process.cwd(); 
 //console.log(__dirname)
-const Config:baseConfig = {srcDir:process.cwd(),Port:3000} 
+const Config:baseConfig = {srcDir:process.cwd(),Port:3000,index:  JSON.parse(fs.readFileSync('./package.json','utf-8')).main||"./src/index.js"} 
+
+//const args = process.argv
 let worker = startWorker(Config)
 const tmp = new Map<string,ArrayBuffer>()
 const tmpJson = new Map<string,string[]>()

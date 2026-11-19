@@ -4,14 +4,17 @@ import  { StorageAdapter   } from './adapter.ts';
 import { OPFSStorage } from './opfs.ts';
 import { IDBStorage } from './idb.ts';
 import { NodeFSStorage } from './nodefs.ts';
+import { RemoteStorageAdapter } from './remote-adapter.ts';
 function isNode(): boolean {
   return typeof process !== 'undefined' && 
          process.versions != null && 
          process.versions.node != null;
 }
 export function createStorage(options: StorageOptions = {}): StorageAdapter {
-  const { dbName, storeName, baseDir, rootDir = '' } = options;
-
+  const { dbName, storeName, baseDir, remote  ,rootDir = '', } = options;
+  if (remote){
+    return new RemoteStorageAdapter(remote)
+  }
   if (!isNode()) {
     // 浏览器
     if (typeof navigator !== 'undefined' && 'storage' in navigator && 'getDirectory' in navigator.storage) {

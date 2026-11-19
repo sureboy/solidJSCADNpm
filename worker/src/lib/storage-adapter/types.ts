@@ -8,8 +8,30 @@ export interface EntryInfo {
   size?: number;          // 仅文件有
   lastModified?: number;  // 仅文件有
 }
+export interface RemoteEndpoints {
+  readFile: (path: string) => string;
+  writeFile: (path: string) => string;
+  deleteFile: (path: string) => string;
+  fileExists: (path: string) => string;
+  writeStream: (path: string) => string;
+  listDirectories: () => string;
+  listFilesInDirectory: (dir: string, create: boolean) => string;
+  deleteDirectory: (dir: string) => string;
+}
+export type HeadersProvider = HeadersInit | (() => HeadersInit | Promise<HeadersInit>);
 
+export interface RemoteStorageOptions {
+  /** 服务端根地址，如 'https://api.example.com/storage'；默认 ''（同源） */
+  baseUrl?: string;
+  /** 静态头，或返回头的函数（每次请求都会调用，适合动态 token） */
+  headers?: HeadersProvider;
+  /** 请求超时（ms），0 表示不超时，默认 30s */
+  timeout?: number;
+  /** 自定义端点映射，不传则用默认 REST 约定 */
+  endpoints?: Partial<RemoteEndpoints>;
+}
 export interface StorageOptions {
+  remote? :RemoteStorageOptions;
   dbName?: string;        // IndexedDB 数据库名（浏览器用）
   storeName?: string;     // IndexedDB 存储对象名（浏览器用，默认 'files'）
   baseDir?: string;       // Node.js 基础目录（默认 './storage'）

@@ -8,6 +8,7 @@ export type baseConfig = {
     Port?:number,
     srcDir:string,uiDir?:string,
     //tmpDir?:string
+    index?:string,
 }
 
 export const defaultConfig:baseConfig = { 

@@ -4,6 +4,9 @@ import {
   getCurrent,
   objUrlMap,type currentObj} from 'worker/src/lib/function/ImportParser'
 import {getCsgObjArray} from 'worker/src/lib/function/csgChange' 
+import {createStorage} from 'worker/src/lib/storage-adapter/factory'
+import { StorageAdapter } from 'worker/src/lib/storage-adapter/adapter.ts';
+import tsBlankSpace from "ts-blank-space";
 //import {sendGeometry} from '$lib/function/geoSend'
 //import {parseError} from '#lib/utils/parseError.ts';
 //import {type DirInfoType,createDirInfo} from "worker/src/lib/function/fileHandle"
@@ -29,14 +32,30 @@ const sendGeometry = (
   console.log(1)
 }*/
 const globalOption:{
-  //basename?:string
+  baseUrl?:string
   option:{[k:string]:any}
-  //DirHandle?:DirInfoType
+  DirHandle?:StorageAdapter
 } = {
   option:{}
 }
-
- 
+//const rst = createStorage({remote:{baseUrl:"http://localhost:3000/src/"}})
+const postMsg =async (e:any)=>{
+  console.log("postMsg",e.path)
+  if (e.path){  
+    try{  
+      let db = await globalOption.DirHandle?.readFile(e.path,"utf8") 
+      if ((e.path as string).endsWith(".ts")){
+        db = tsBlankSpace(db)
+      }
+      handleCurrentMsg({ db,name:e.path },postMsg)   
+    }catch(err){  
+      //console.error(err,globalOption,e)
+      handleCurrentMsg({name:e.path})!.getUri = async ()=>new URL(
+      includeImport[e.path] ||e.path  ,
+      globalOption.baseUrl).toString();    
+    } 
+  }  
+}
 onMainMessage(async (event) => { 
   if (event.option){
     defaultOption.option =Object.assign(defaultOption.option,event.option)
@@ -45,11 +64,18 @@ onMainMessage(async (event) => {
   if (event.reload){
     defaultOption.option={}
   }
+  if (event.remote){
+    console.log(event)
+    globalOption.baseUrl = event.remote.baseUrl
+    globalOption.DirHandle = createStorage({remote:event.remote})
+  }
   if (event.name && event.tag) {
-    //const target = path.resolve(defaultConfig.srcDir  , event.name);
-    let fileName ="http://localhost:3000/src/"+event.name //pathToFileURL(target).href 
-    //console.log(event)
-    //await storage?.deleteDirectory(path.join("", event.name))
+    //console.log()
+    
+    const cur =await getCurrent(event.name,postMsg)
+    const fileName = await cur.getUri() 
+    //console.log(db)
+    
     
     try{
       /*
