@@ -3,8 +3,8 @@
 // ============================================================================
 // 几何对象类型定义（基于运行时检查的特征）
 // ============================================================================
-import modeling from "@jscad/modeling";
-const { geom3 } = modeling.geometries;
+//import modeling from "@jscad/modeling";
+//const { geom3 } = modeling.geometries;
 //const { geom3 } = modeling.geometries;
 type Geo = Geom3|Geom2|Path2|RawGeometry   |Promise<RawGeometry>
 interface Geom3 {
@@ -206,12 +206,12 @@ export const getCsgObj =async (v:  Geo,index:number, back?: BackCallback):Promis
  * 将 geom3 转换为 MeshData（顶点、法线、索引）
  */
 const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
-const CSG2Vertices = (csg_: Geom3): MeshData => {
+const CSG2Vertices = (csg: Geom3): MeshData => {
   // 预计算顶点和索引数量
 
-  const csg = geom3.create(geom3.toPolygons(csg_));
+ // const csg = geom3.create(geom3.toPolygons(csg_));
     // 保留颜色等属性（可选）
-    csg.color =  csg_.color;
+ //   csg.color =  csg_.color;
   let vertexCount = 0;
   let indexCount = 0;
   for (const poly of csg.polygons) {
