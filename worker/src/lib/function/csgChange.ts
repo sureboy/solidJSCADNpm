@@ -220,7 +220,7 @@ const CSG2Vertices = (csg_: Geom3): MeshData => {
   }
 
   const vertices = new Float32Array(vertexCount * 3);
-  //const normals = new Float32Array(vertexCount * 3);
+  const normals = new Float32Array(vertexCount * 3);
   const indices = vertexCount > 65535 
     ? new Uint32Array(indexCount) 
     : new Uint16Array(indexCount);
@@ -232,14 +232,14 @@ const CSG2Vertices = (csg_: Geom3): MeshData => {
   for (const poly of csg.polygons) {
     //console.log(poly)
     const arr = poly.vertices;
-    //const normal = calculateNormal(arr);
+    const normal = calculateNormal(arr);
     const len = arr.length;
     const first = vertexIndex;
 
     // 写入顶点和法线
     for (let i = 0; i < len; i++) {
       vertices.set(arr[i], vertOffset);
-      //normals.set(normal, vertOffset);
+      normals.set(normal, vertOffset);
       vertOffset += 3;
       vertexIndex += 1;
     }
@@ -259,65 +259,13 @@ const CSG2Vertices = (csg_: Geom3): MeshData => {
     type: "mesh",
     vertices,
     indices,
-    normals:undefined,
+    normals,//:undefined,
     color: csg.color,
-    transforms ,
+    transforms  ,
   };
 };
 
-
-const CSG2Vertices_ = (csg: Geom3): MeshData => {
-  let vLen = 0;
-  let iLen = 0;
-  for (const poly of csg.polygons) {
-    const len = poly.vertices.length;
-    vLen += len * 3;
-    iLen += 3 * (len - 2);
-  }
-
-  const vertices = new Float32Array(vLen);
-  // 不生成法线数组（或生成但留空，后续由 Three.js 计算）
-  const indices =  vLen > 65535 ? new Uint32Array(iLen) : new Uint16Array(iLen);
-  const color = csg.color;
-
-  let vertOffset = 0;
-  let indOffset = 0;
-  let posOffset = 0;
-  let first = 0;
-
-  for (const poly of csg.polygons) {
-    const arr = poly.vertices;
-    const len = arr.length;
-    first = posOffset;
-
-    // 写入所有顶点（交换 Y 和 Z）
-    for (let i = 0; i < len; i++) {
-      const v = arr[i];
-      vertices[vertOffset] = v[0];
-      vertices[vertOffset + 1] = v[2]; // 原来的 Z 变为新的 Y
-      vertices[vertOffset + 2] = v[1]; // 原来的 Y 变为新的 Z
-      vertOffset += 3;
-      posOffset++;
-    }
-
-    // 生成索引（三角形扇），但**反转每个三角形的顶点顺序**
-    // 原顺序：first, first+1, first+2; first, first+2, first+3; ...
-    // 反转后：first, first+2, first+1; first, first+3, first+2; ...
-    for (let i = 2; i < len; i++) {
-      indices[indOffset++] = first;
-      indices[indOffset++] = first + i;      // 第三个顶点
-      indices[indOffset++] = first + i - 1;  // 第二个顶点（交换位置）
-    }
-  }
-  return {
-    type: "mesh",
-    vertices,
-    indices,
-    normals: undefined, // 不提供法线，让 Three.js 自动计算
-    color,
-    transforms: csg.transforms, // 保持不变，但后续应用时要注意
-  };
-};
+ 
 /**
  * 计算多边形法线（假设为三角形扇的第一个三角形）
  */

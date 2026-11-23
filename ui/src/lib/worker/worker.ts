@@ -11,88 +11,96 @@ import tsBlankSpace from "ts-blank-space";
 //import {parseError} from '#lib/utils/parseError.ts';
 //import {type DirInfoType,createDirInfo} from "worker/src/lib/function/fileHandle"
 import {postMain,onMainMessage,getTransferableList} from 'worker/src/lib/utils/workerLib.ts';  
-const includeImport:{[key:string]:string} = {
-  "@jscad/modeling": "./lib/modeling.esm.js",
-  //"csgChange": "./lib/csgChange.js",
-  "manifold-3d":"./lib/manifold/manifold.js"
-}
+const includeImport:{[key:string]:string} = {}
 const defaultOption = {
   //main:"main",
   option:{},
   name:"./index.js",
   //dist:new Map<string,any[]>()
 }
-/*
-import {type csgObj } from "$lib/function/csg2Three";
-const sendGeometry = (
-  channel: {send:(db:any)=>void},
-  obj: csgObj,
-  options: { smooth?: boolean } = {}
-)=>{
-  console.log(1)
-}*/
+ 
 const globalOption:{
-  baseUrl?:string
+  rootUrl?:string
   option:{[k:string]:any}
   DirHandle?:StorageAdapter
 } = {
   option:{}
 }
-//const rst = createStorage({remote:{baseUrl:"http://localhost:3000/src/"}})
+/*
+fetch("/lib/include_import.json").then(r=>{
+  if (r.ok){
+    r.json().then(db=>{
+      Object.assign(includeImport,db)
+    })
+  }
+})*/
 const postMsg =async (e:any)=>{
   console.log("postMsg",e.path)
-  if (e.path){  
+  if (!e.path){  
+    return
+  }
+  const ispath = (e.path as string).startsWith('./')
+  if (ispath){
     try{  
-      let db = await globalOption.DirHandle?.readFile(e.path,"utf8") 
+      let db = await globalOption.DirHandle?.readFile(e.path ,"utf8") 
       if ((e.path as string).endsWith(".ts")){
         db = tsBlankSpace(db)
       }
       handleCurrentMsg({ db,name:e.path },postMsg)   
-    }catch(err){  
-      //console.error(err,globalOption,e)
-      handleCurrentMsg({name:e.path})!.getUri = async ()=>new URL(
-      includeImport[e.path] ||e.path  ,
-      globalOption.baseUrl).toString();    
+      return
+    }catch(err){   
     } 
-  }  
+  }
+  /*
+  const p = includeImport[e.path]  
+  if (p){
+    handleCurrentMsg({name:e.path})!.getUri = async ()=>new URL(
+      p ,
+      new URL(import.meta.url).origin).toString();  
+    return;
+  }*/
+ 
+  if (!ispath){
+
+    let rootUri= new URL(import.meta.url).origin
+ 
+    handleCurrentMsg({name:e.path})!.getUri = async ()=>{
+      return new URL(
+      "/modules/"+e.path ,
+      rootUri).toString();
+    } 
+    return
+  } 
+  handleCurrentMsg({name:e.path})!.getUri = async ()=>{
+      const uri= new URL(
+      e.path ,
+      globalOption.rootUrl).toString();  
+      return uri
+    }
 }
 onMainMessage(async (event) => { 
   if (event.option){
-    defaultOption.option =Object.assign(defaultOption.option,event.option)
-    //console.log("opt",JSON.stringify(defaultOption.option),event.option)
+    defaultOption.option =Object.assign(defaultOption.option,event.option) 
   } 
   if (event.reload){
     defaultOption.option={}
   }
   if (event.remote){
     console.log(event)
-    globalOption.baseUrl = event.remote.baseUrl
+    globalOption.rootUrl = event.remote.rootUrl
     globalOption.DirHandle = createStorage({remote:event.remote})
   }
-  if (event.name && event.tag) {
-    //console.log()
-    
+  if (event.name && event.tag) { 
     const cur =await getCurrent(event.name,postMsg)
-    const fileName = await cur.getUri() 
-    //console.log(db)
-    
-    
+    const fileName = await cur.getUri()  
     try{
-      /*
-      const res = await fetch(fileName)
-      if (!res.ok)
-        return
-      const src =await res.text()
-      console.log(src)
-      return*/
       const  mod = await import(/* @vite-ignore */fileName ); 
       const fnlistSet = new Set<string>() 
       const fnlist = Object.keys(mod)
       let opt:{[k:string]:any}={}
       fnlist.forEach(l=>{
         if (l==="default"){
-          Object.assign(opt,mod[l])
-          //opt['def'] = src[l]
+          Object.assign(opt,mod[l]) 
           return
         }
         if (typeof mod[l] ==="function"){
@@ -108,13 +116,10 @@ onMainMessage(async (event) => {
           tag = list[0]
         else
           tag = "main"
-      }
-
+      } 
       Object.assign(opt,defaultOption.option)
-      console.log(list)
-      //console.log(opt.DefaultOpt.miniWheelopt.gA)
+      //console.log(list) 
       postMain({list ,option:opt,tag})  
-    
       let db = mod[ tag ](opt)
       if (db.then){
         db = await db
@@ -129,19 +134,7 @@ onMainMessage(async (event) => {
         //msg.main = main
         getTransferableList(msg,transfer)
         postMain(msg,transfer)
-        /*
-        await sendGeometry(
-          {
-            send: async (val) => {
-              //console.log(val)
-              index++
-              const tmpPart = path.join( event.name  ,defatuleOption.main,`${index}.tmp`)
-              await storage?.writeFile(tmpPart,val)
-              postMain({tmpPart,run:defatuleOption.main})
-            },
-          },
-          msg as any,
-        )  */        
+        
       })
     }catch(e){
       console.error(e)

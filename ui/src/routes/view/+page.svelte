@@ -169,11 +169,14 @@ onMount(() => {
       stopTicker=true
     }
   }).then(w=>{
-    const u = new URL((window.location.hash.slice(1)||"/src/index.js"),rootUrl)
-    const i = u.href.lastIndexOf("/") 
+    const name =(window.location.hash.slice(1)||"/src/index.js") 
+    const u = new URL(name,rootUrl)
+    //const i = u.href.lastIndexOf("/") 
     w.postMessage({
-      remote:{baseUrl:u.href.slice(0,i+1)},
-      name:"."+u.href.slice(i),
+      remote:{baseUrl:u.href,//.slice(0,i+1)
+        rootUrl,
+      },
+      name:"."+u.href.slice(u.href.lastIndexOf("/")),
       tag:window.localStorage.getItem("main")||"main"})
   })
   

@@ -24,7 +24,6 @@ function* chunks(buf: Buffer, size = 64 * 1024) {
     yield buf.subarray(i, i + size);
   }
 }
-
 const reloadWorker = ()=>{
   postMessage({shutdown:true})
   worker = startWorker(Config) 

@@ -32,7 +32,7 @@ const bakeTransform = (geo) => {
   baked.color = geo.color;
   return baked;
 };
-const manifold_main =async (opt) => {
+export const manifold_main =async (opt) => {
   const {L,W,H,T} = Object.assign(Opt,opt)
   const Manifold = await manifold();
 Manifold.setup();

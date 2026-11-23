@@ -57,8 +57,7 @@ onMainMessage(async (event) => {
           tag = list[0]
         else
           tag = "main"
-      }
-
+      } 
       Object.assign(opt,defaultOption.option)
       //console.log(opt.DefaultOpt.miniWheelopt.gA)
       postMain({list ,option:opt,tag})  

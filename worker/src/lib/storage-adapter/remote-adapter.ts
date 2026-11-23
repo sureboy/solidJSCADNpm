@@ -22,12 +22,13 @@ function defaultEndpoints(baseUrl: string): RemoteEndpoints {
   const u = (p: string) => base + p;
   const q = (path: string) => `path=${encodeURIComponent(trimSlashes(path))}`;
   return {
-    readFile:            (path)         =>{
+    readFile: (path) =>{
+      console.log(path,baseUrl)
       const uri = new URL(path,baseUrl ).href
       //console.log(uri,base,path)
       return uri
       // u(`/src/${path}`)
-      },
+    },
     writeFile:           (path)         => u(`/file?${q(path)}`),
     deleteFile:          (path)         => u(`/file?${q(path)}`),
     fileExists:          (path)         => u(`/file?${q(path)}`),
@@ -37,7 +38,6 @@ function defaultEndpoints(baseUrl: string): RemoteEndpoints {
     deleteDirectory:     (dir)          => u(`/dir?${q(dir)}`),
   };
 }
-
 export class RemoteStorageAdapter extends StorageAdapter {
   private readonly ep: RemoteEndpoints;
   private readonly headers?: HeadersProvider;
