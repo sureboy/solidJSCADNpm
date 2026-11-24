@@ -12,10 +12,14 @@ import tsBlankSpace from "ts-blank-space";
 //import {type DirInfoType,createDirInfo} from "worker/src/lib/function/fileHandle"
 import {postMain,onMainMessage,getTransferableList} from 'worker/src/lib/utils/workerLib.ts';  
 const includeImport:{[key:string]:string} = {}
-const defaultOption = {
+const defaultOption:{
+  list:string[],
+  option:{[key:string]:any},name:string,mod:{[key:string]:any}} = {
   //main:"main",
+  list:[],
   option:{},
   name:"./index.js",
+  mod:{},
   //dist:new Map<string,any[]>()
 }
  
@@ -26,14 +30,14 @@ const globalOption:{
 } = {
   option:{}
 }
-/*
+
 fetch("/lib/include_import.json").then(r=>{
   if (r.ok){
     r.json().then(db=>{
       Object.assign(includeImport,db)
     })
   }
-})*/
+})
 const postMsg =async (e:any)=>{
   console.log("postMsg",e.path)
   if (!e.path){  
@@ -51,14 +55,14 @@ const postMsg =async (e:any)=>{
     }catch(err){   
     } 
   }
-  /*
+  
   const p = includeImport[e.path]  
   if (p){
     handleCurrentMsg({name:e.path})!.getUri = async ()=>new URL(
       p ,
       new URL(import.meta.url).origin).toString();  
     return;
-  }*/
+  }
  
   if (!ispath){
 
@@ -90,37 +94,46 @@ onMainMessage(async (event) => {
     globalOption.rootUrl = event.remote.rootUrl
     globalOption.DirHandle = createStorage({remote:event.remote})
   }
-  if (event.name && event.tag) { 
+  if (event.name  ) { 
     const cur =await getCurrent(event.name,postMsg)
     const fileName = await cur.getUri()  
     try{
-      const  mod = await import(/* @vite-ignore */fileName ); 
-      const fnlistSet = new Set<string>() 
+      const mod = await import(/* @vite-ignore */fileName ); 
+      defaultOption.mod = mod
+      defaultOption.list  =[]// new Set<string>() 
       const fnlist = Object.keys(mod)
-      let opt:{[k:string]:any}={}
+      //let opt:{[k:string]:any}={}
       fnlist.forEach(l=>{
         if (l==="default"){
-          Object.assign(opt,mod[l]) 
+          Object.assign(defaultOption.option,mod[l]) 
           return
         }
         if (typeof mod[l] ==="function"){
-          fnlistSet.add(l)
+          defaultOption.list.push(l)
+          //fnlistSet.add(l)
         }else{
-          opt[l] = mod[l]
+          defaultOption.option[l] = mod[l]
         }
       }) 
-      const list = [...fnlistSet]
-      let tag = event.tag
-      if (!fnlistSet.has(tag)){
-        if (!fnlistSet.has("main"))
-          tag = list[0]
+      //const list = [...fnlistSet]
+      postMain({list:defaultOption.list ,option:defaultOption.option,tag:event.tag||""})  
+    }catch(e){}
+  }
+
+    if (  event.tag) { 
+       try{
+      let tag = event.tag as string
+      console.log(tag,defaultOption.list)
+      if (!defaultOption.list.includes(tag)){
+        if (!defaultOption.list.includes("main"))
+          tag = defaultOption.list[0]
         else
           tag = "main"
       } 
-      Object.assign(opt,defaultOption.option)
+      //Object.assign(opt,defaultOption.option)
       //console.log(list) 
-      postMain({list ,option:opt,tag})  
-      let db = mod[ tag ](opt)
+     
+      let db = defaultOption.mod[ tag ](defaultOption.option)
       if (db.then){
         db = await db
       }

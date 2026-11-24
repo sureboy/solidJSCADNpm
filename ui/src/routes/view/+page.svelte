@@ -141,6 +141,9 @@ onMount(() => {
               if (window.localStorage.getItem("main") !== v){
                 window.localStorage.setItem("main",v)
               } 
+              getWorker().then(w=>{
+                w.postMessage({tag:value})
+              })
               //runEvent(value)
             })()
           }else{
@@ -173,7 +176,8 @@ onMount(() => {
     const u = new URL(name,rootUrl)
     //const i = u.href.lastIndexOf("/") 
     w.postMessage({
-      remote:{baseUrl:u.href,//.slice(0,i+1)
+      remote:{
+        baseUrl:u.href,//.slice(0,i+1)
         rootUrl,
       },
       name:"."+u.href.slice(u.href.lastIndexOf("/")),
