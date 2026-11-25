@@ -103,11 +103,12 @@ const updateGeometrys = (data:any)=>{
       }
       geometrys.push( {geometry:[geo],tag:data.tag,show:true})
       //console.log("push",geometrys.length)
-    })()    
+    })()  
+
     setMaxSize(geo.geo) 
   }  
 }
- 
+
 onMount(() => {  
   getWorker((e)=>{
     //console.log(e)
@@ -117,49 +118,63 @@ onMount(() => {
     }
     if (newData.list){ 
       //console.log(newData)
-      moduleInit(
-        geometrys,
-      Object.assign({ 
-        Clickhandle:(checked: boolean, value: string)=>{
+      moduleInit( 
+      { 
+        Clickhandle:( v: string|{ [k: string]: any;},e: boolean)=>{
           //console.log("runEvent",value)
-          if (checked){
+          console.log(e)
+          if (typeof v!=="string"){
+            getWorker().then(w=>{
+                w.postMessage({tag:window.localStorage.getItem("main")||"main",option:v})
+              })
+            return
+          } 
+          if (e){
             (()=>{
-              const i = value.indexOf('?')
-              let v = value
-              if (i===-1){
-                for (const g of geometrys){
-                  if (g.tag ===value){
-                    g.show = true
-                    return
-                  }
+              //const i = value.indexOf('?')
+              //let v = v
+              //if (i===-1){
+              for (const g of geometrys){
+                if (g.tag ===v){
+                  g.show = true
+                  return
                 }
-              }else{
-                v = value.slice(0,i)
-                geometrys = []
+              }
+              //}else{
+              //  v = value.slice(0,i)
+                //geometrys = [] 
 
-              } 
+              //} 
               if (window.localStorage.getItem("main") !== v){
-                window.localStorage.setItem("main",v)
+                window.localStorage.setItem("main",v  )
               } 
               getWorker().then(w=>{
-                w.postMessage({tag:value})
+                w.postMessage({tag:v})
               })
               //runEvent(value)
             })()
           }else{
             for (const g of geometrys){
-              if (g.tag ===value){
+              if (g.tag ===v){
                 g.show=false
                 return
               }
             }
           }          
         },
-        key:"",
-        path:"test",
-        //list:newData.mainList
-      },
-      newData )) 
+        //key:"",
+        //path:"test",
+        list:newData.list,
+        option:newData.option
+      } ) 
+    }
+    if (newData.start){
+      solidControlConfig.GridSize=10
+      solidControlConfig.MaxSize.set(10,10,10)
+      showMenu=false
+      stopTicker=false
+      beginTime=Date.now() 
+      tickRunTime() 
     }
     if (newData.end){
       clearTimeout(refreshCameraTimer)
@@ -170,6 +185,14 @@ onMount(() => {
       if (!showMenu) showMenu = true
       //eventSource?.close();
       stopTicker=true
+      const dom = document.getElementsByName(newData.end)
+      for (let [i,el] of dom.entries()){
+        if (el instanceof HTMLInputElement) {
+          el.checked=true
+          break
+        }
+      }
+      //console.log("end",dom)
     }
   }).then(w=>{
     const name =(window.location.hash.slice(1)||"/src/index.js") 

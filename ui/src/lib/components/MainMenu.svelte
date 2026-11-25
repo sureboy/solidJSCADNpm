@@ -9,25 +9,17 @@ let solidName:HTMLElement;
 //let basename:string
 //let spinner:HTMLElement;
 
-export const moduleInit = (geometrys: {
-    geometry: {
-        type: string;
-        material: any;
-        geo: any;
-    }[];
-    show: boolean;
-    tag: string;
-}[],  opt:{  
-      Clickhandle?:(checked: boolean, value: string)=>void,
-  list:string[],
-  tag:string,
-  key?:string,
+export const moduleInit = (
+  opt:{  
+    Clickhandle?:(value: string|{ [k: string]: any;},show: boolean )=>void,
+  list:string[], 
   option?:{[k:string]:any}, 
 } )=>{ 
   if (menu)menu.innerHTML=""   
   if (solidName)solidName.textContent = "main"
   tmpDiv.style.display = 'inline' 
   opt.list.forEach(m=>{
+    /*
     let checked = m===opt.tag
     if (!checked)
       for (const g of geometrys){
@@ -36,9 +28,21 @@ export const moduleInit = (geometrys: {
           break;
         }
       }  
- 
-    const box = createVerticalCheckbox({checked,name:m,text:m,value:m,onChange:(c,v)=>{ 
-      opt.Clickhandle?.(c,v)
+    */
+    const box = createVerticalCheckbox({checked:false,name:m,text:m,value:m,onChange:(v,e)=>{ 
+      if (e.target instanceof HTMLInputElement){
+        opt.Clickhandle?.(v, e.target.checked )
+      }else{ 
+        opt.Clickhandle?.(v, true)
+        ShowSubmit(getDialogDiv(),{test:v},(db)=>{ 
+          
+          //opt.option = Object.assign(opt.option||{},db)
+          //const v = (window.localStorage.getItem("main")||"main")+"?opt="+encodeURIComponent(JSON.stringify(opt.option)) 
+          //opt.Clickhandle?.(Object.assign(opt.option||{},db) ,true) 
+          closeModal()    
+        })
+        openModal()
+      }
     }}) 
     menu.appendChild(box)
   }) 
@@ -47,22 +51,10 @@ export const moduleInit = (geometrys: {
     btn.onclick = (e)=>{
       //console.log(opt.option) 
       ShowSubmit(getDialogDiv(),opt.option,(db)=>{ 
-        opt.option = Object.assign(opt.option||{},db)
-        const v = (window.localStorage.getItem("main")||"main")+"?opt="+encodeURIComponent(JSON.stringify(opt.option)) 
-        //console.log(db,opt.option)
-        opt.Clickhandle?.(true,v)
-        //const msg = {name:"./index.js",onlyInit:true,update:opt.key,type:"workerInit",...opt}
-        //console.log(msg)
-         
-        //DirInfo?.workerHandle?.(msg)  
-        //DirInfo?.channeldb?.postMessage(msg)
-        //}
-        closeModal()
-        /*
-        getWorker().then(w=>{ 
-          w.postMessage({name:"./index.js",...opt})  
-        })*/
-              
+        //opt.option = Object.assign(opt.option||{},db)
+        //const v = (window.localStorage.getItem("main")||"main")+"?opt="+encodeURIComponent(JSON.stringify(opt.option)) 
+        opt.Clickhandle?.(Object.assign(opt.option||{},db) ,true) 
+        closeModal()    
       })
       openModal()
     }

@@ -17,7 +17,7 @@ export interface CheckboxOptions<V extends string = string> {
   /** label 的 class */
   className?: string;
   /** 值变化回调 */
-  onChange?: (checked: boolean, value: V, event: Event) => void;
+  onChange?: (  value: V, event: Event) => void;
 }
 
 /**
@@ -55,17 +55,21 @@ export function createCheckbox<V extends string = string>(
     label.htmlFor = id;
   }
 
-  if (onChange) {
+  //if (onChange) {
     input.addEventListener('change', (event) => {
-      onChange(input.checked, value, event);
+      onChange?.(  value, event);
     });
-  }
+  //}
   const TextNode = document.createElement('button')
   TextNode.textContent = text
   TextNode.onclick = (e:any)=>{
-    if (onChange) {
-      onChange(true, `${value}?reload=true` as V, e);
-    }
+    //if (onChange) {
+      
+      //input.value = `${value}?reload=true`
+    
+      //input.checked=true
+    onChange?.( value, e);
+    //}
   }
   label.append(input, TextNode)
   //label.append(input, document.createTextNode(` ${text}`));

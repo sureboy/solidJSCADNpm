@@ -94,7 +94,11 @@ onMainMessage(async (event) => {
     globalOption.rootUrl = event.remote.rootUrl
     globalOption.DirHandle = createStorage({remote:event.remote})
   }
+  if (event.name || event.tag){
+     postMain({start:true})
+  }
   if (event.name  ) { 
+   
     const cur =await getCurrent(event.name,postMsg)
     const fileName = await cur.getUri()  
     try{
@@ -152,7 +156,7 @@ onMainMessage(async (event) => {
     }catch(e){
       console.error(e)
     }
-    postMain({end:true})
+    postMain({end:event.tag})
     //console.log(mod,mod['bottom']() )
   }
 })

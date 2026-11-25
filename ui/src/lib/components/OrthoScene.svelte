@@ -6,7 +6,7 @@ import {
     OrthographicCamera,
     PerspectiveCamera, 
     WebGLRenderer,
-    Matrix4
+    //Matrix4
     //normalMaterial: THREE.MeshNormalMaterial;
 } from 'three';
 import {type ThrelteContext } from '@threlte/core'
@@ -84,15 +84,11 @@ export const refreshCameraInit =(opt:{
     const fov =  (cam.fov )*(Math.PI /180); 	 
     cam.position.setZ( groupSize /2/Math.tan(fov/2)); 	 
     cam.aspect = aspect	; 
-  }
- 
-  camera.updateProjectionMatrix();
-   
-    camera?.lookAt(0,0,0) ;
-    Controls?.target.set(0, 0, 0);
-    Controls?.update();
- 
-
+  } 
+  camera.updateProjectionMatrix(); 
+  camera?.lookAt(0,0,0) ;
+  Controls?.target.set(0, 0, 0);
+  Controls?.update(); 
 }
 
 export const refreshCamera = (direction:string,isOrthographic:boolean,MaxSize:Vector3)=>{
@@ -134,7 +130,7 @@ import { MeshNormalMaterial } from 'three';
     getContext:any
     solidControlConfig:ConfigType, 
     geometrys:{
-      geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string
+      geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string 
     }[]
      
 } = $props() 
@@ -177,6 +173,8 @@ const normalMaterial = new MeshNormalMaterial({ flatShading: true });
  
 {#each geometrys as {geometry,show}} 
   {#if show}
+  <T.Group>
+ 
     {#each geometry as {type,geo,material,transforms} } 
       {#if type==="mesh"} 
       <T.Mesh geometry={geo}  material={solidControlConfig.Light ? material : normalMaterial} matrix={transforms} matrixAutoUpdate={false}  > 
@@ -188,6 +186,7 @@ const normalMaterial = new MeshNormalMaterial({ flatShading: true });
       <T.Line geometry={geo} {material}></T.Line> 
       {/if}
     {/each}
+  </T.Group>
   {/if}
 {/each}  
  
