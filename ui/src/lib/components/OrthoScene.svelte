@@ -6,6 +6,7 @@ import {
     OrthographicCamera,
     PerspectiveCamera, 
     WebGLRenderer,
+    Matrix4 
     //Matrix4
     //normalMaterial: THREE.MeshNormalMaterial;
 } from 'three';
@@ -24,6 +25,15 @@ export type ConfigType = {
   Context?:ThrelteContext<WebGLRenderer>
   getAspect:()=>number 
 }
+export type geometrysType = {
+  geometry:{
+    type:string, 
+    material:any,
+    geo:any,
+    transforms:any
+  }[], show:boolean,tag:string,position?:{x:number,y:number,z:number}
+  //transforms: any
+}[]
 let camera:OrthographicCamera|PerspectiveCamera|undefined = $state(undefined)
 let Controls :Orb|undefined = $state(undefined) ;
 //const useT= useThrelte()
@@ -129,16 +139,14 @@ import { MeshNormalMaterial } from 'three';
     solidControlConfig}:{ 
     getContext:any
     solidControlConfig:ConfigType, 
-    geometrys:{
-      geometry:{type:string, material:any,geo:any,transforms:any}[], show:boolean,tag:string 
-    }[]
+    geometrys:geometrysType
      
 } = $props() 
   const Context= useThrelte() 
 onMount(()=>{ 
   getContext(Context) 
 }) 
-
+ 
 const normalMaterial = new MeshNormalMaterial({ flatShading: true });
 </script> 
 
@@ -171,13 +179,16 @@ const normalMaterial = new MeshNormalMaterial({ flatShading: true });
   <T.AxesHelper args={[solidControlConfig.GridSize/2+1]} />
 {/if}
  
-{#each geometrys as {geometry,show}} 
+{#each geometrys as {geometry,show,position}} 
   {#if show}
-  <T.Group>
+  <T.Group
+  position={[position?.x??0, position?.y??0, position?.z??0]} >
  
     {#each geometry as {type,geo,material,transforms} } 
       {#if type==="mesh"} 
-      <T.Mesh geometry={geo}  material={solidControlConfig.Light ? material : normalMaterial} matrix={transforms} matrixAutoUpdate={false}  > 
+      <T.Mesh geometry={geo}  
+      material={solidControlConfig.Light ? material : normalMaterial} 
+      matrix={transforms} matrixAutoUpdate={false}  > 
        
       </T.Mesh>
       {:else if type ==="lines"}

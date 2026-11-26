@@ -1,6 +1,9 @@
 <script lang="ts" module>
 let DialogDiv:HTMLDivElement 
-export const getDialogDiv = ()=>{
+let title = $state("")
+export const getDialogDiv = (t?:string)=>{
+  if (t)
+    title = t
   return DialogDiv
 }
 </script>
@@ -13,6 +16,7 @@ const {
   children?:any,
  
 } = $props() 
+
 </script>
 
 <div style="position: absolute;left:5px;top:5px;z-index: 11;cursor: pointer;" class="pointer-events-auto" >
@@ -28,6 +32,6 @@ const {
  
 </div>
 
-<Dialog title = {""}  >
-  <div bind:this={DialogDiv}>test</div> 
+<Dialog {title}   >
+  <div bind:this={DialogDiv}></div> 
 </Dialog>

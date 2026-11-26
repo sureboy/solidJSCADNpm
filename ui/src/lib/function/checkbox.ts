@@ -67,7 +67,7 @@ export function createCheckbox<V extends string = string>(
       
       //input.value = `${value}?reload=true`
     
-      //input.checked=true
+    input.checked=true
     onChange?.( value, e);
     //}
   }

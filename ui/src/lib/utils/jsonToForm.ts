@@ -81,7 +81,11 @@ export function jsonToForm(data: JsonValue, container: HTMLElement, path: string
         return;
     }
     if (Array.isArray(data)) {
-        renderArrayAsTextarea(data, container, path);
+        if (isPrimitiveArray(data)){
+            //console.log("renderArrayAsSelect")
+            renderArrayAsSelect(data, container, path)
+        }else
+            renderArrayAsTextarea(data, container, path);
         return;
     }
     if (isPlainObject(data)) {
@@ -104,7 +108,88 @@ function renderNullValue(container: HTMLElement, path: string): void {
     div.textContent = `${path || '值'}: null (不可编辑)`;
     container.appendChild(div);
 }
+function renderArrayAsSelect(
+    data: Primitive[],
+    container: HTMLElement,
+    path: string,
+    comment?: string,
+): void {
+    const div = document.createElement('div');
+    Object.assign(div.style, { marginBottom: '1rem' });
 
+    const id = `field-${pathToId(path) || 'root_array'}`;
+    const label = document.createElement('label');
+    label.textContent = path || '数组';
+    label.htmlFor = id;
+    Object.assign(label.style, {
+        display: 'block',
+        fontWeight: 'bold',
+        marginBottom: '0.25rem',
+        fontSize: '0.85rem',
+    });
+    if (comment) {
+        const commentSpan = document.createElement('span');
+        commentSpan.textContent = ` ${comment}`;
+        Object.assign(commentSpan.style, {
+            fontSize: '0.75rem',
+            fontWeight: 'normal',
+            color: '#666',
+        });
+        label.appendChild(commentSpan);
+    }
+    div.appendChild(label);
+
+    const select = document.createElement('select');
+    select.id = id;
+    select.multiple = false;                    // 单选
+    select.dataset.path = path;
+    select.dataset.type = 'array';
+    Object.assign(select.style, {
+        width: '100%',
+        padding: '0.5rem',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        fontSize: '0.875rem',
+    });
+
+    // 占位项：允许"不选"
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = data.length === 0 ? '（无可选项）' : '—— 请选择 ——';
+    placeholder.selected =comment?false: true;
+    select.appendChild(placeholder);
+
+    // 单选默认取数组第一个元素（原数组若有多个元素，只能保留一个，见下方说明）
+    //const defaultValue = data.length > 0 ? data[0] : undefined;
+
+    data.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = formatOptionLabel(item);
+        option.dataset.rawValue = JSON.stringify(item);
+        if (comment   && Object.is(item, comment)) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    div.appendChild(select);
+    container.appendChild(div);
+}
+function formatOptionLabel(item:any){
+    return item === null ? 'null' : String(item);
+}
+type Primitive = string | number | boolean | null;
+
+function isPrimitiveArray(data: JsonValue[]): data is Primitive[] {
+    return data.every(
+        item =>
+            item === null ||
+            typeof item === 'string' ||
+            typeof item === 'number' ||
+            typeof item === 'boolean'
+    );
+}
 /** 渲染数组（textarea），支持注释提示 */
 function renderArrayAsTextarea(data: JsonArray, container: HTMLElement, path: string, comment?: string): void {
     const div = document.createElement('div');
@@ -166,11 +251,9 @@ function renderArrayAsTextarea(data: JsonArray, container: HTMLElement, path: st
 function renderObject(obj: JsonObject, container: HTMLElement, basePath: string): void {
     // 第一步：提取注释信息（字段级注释 + 对象级注释）
     const fieldComments: Map<string, string> = new Map();   // 主字段名 -> 注释
-    let objectComment: string | undefined = undefined;
-
+    let objectComment: string | undefined = undefined; 
     // 过滤出真正的数据字段（非注释字段）
-    const dataEntries: [string, JsonValue][] = [];
-
+    const dataEntries: [string, JsonValue][] = []; 
     for (const [key, value] of Object.entries(obj)) {
         if (key === '_comment') {
             // 对象级注释（字符串值）
@@ -204,14 +287,17 @@ function renderObject(obj: JsonObject, container: HTMLElement, basePath: string)
     for (const [key, value] of dataEntries) {
         const fieldPath = basePath ? `${basePath}.${key}` : key;
         const fieldContainer = document.createElement('div');
-        Object.assign(fieldContainer.style, { marginBottom: '1rem' });
-
-        const comment = fieldComments.get(key); // 字段级注释
-
+        Object.assign(fieldContainer.style, { marginBottom: '1rem' }); 
+        const comment = fieldComments.get(key); // 字段级注释 
         if (value === null) {
             renderNullValue(fieldContainer, fieldPath);
         } else if (Array.isArray(value)) {
-            renderArrayAsTextarea(value, fieldContainer, fieldPath, comment);
+            if (isPrimitiveArray(value)) {
+                renderArrayAsSelect(value, fieldContainer, fieldPath, comment);
+            } else {
+                renderArrayAsTextarea(value, fieldContainer, fieldPath, comment);
+            }
+            //renderArrayAsTextarea(value, fieldContainer, fieldPath, comment);
         } else if (isPlainObject(value)) {
             // 嵌套对象：使用 fieldset，且支持对象级注释（递归内部会处理）
             const fieldset = document.createElement('fieldset');
@@ -243,12 +329,30 @@ function renderObject(obj: JsonObject, container: HTMLElement, basePath: string)
             fieldset.appendChild(nestedContainer);
             fieldContainer.appendChild(fieldset);
         } else {
-            renderPrimitive(value, typeof value as 'string' | 'number' | 'boolean', fieldContainer, fieldPath, key, comment);
+             const range = typeof value === 'number' ? parseRangeFromComment(comment) : undefined;
+            renderPrimitive(
+                value,
+                typeof value as 'string' | 'number' | 'boolean', 
+                fieldContainer, fieldPath, key, comment,range
+            );
         }
         container.appendChild(fieldContainer);
     }
 }
-
+/** 从注释中解析数值范围，支持 "0-150"、"范围 0~150"、"0 到 150" 等写法 */
+function parseRangeFromComment(comment?: string): { min?: number; max?: number; step?: number }|undefined {
+    if (!comment) return undefined;
+    const m = comment.match(/(-?\d+(?:\.\d+)?)\s*(?:-|~|～|到|至)\s*(-?\d+(?:\.\d+)?)/);
+    if (!m) return undefined;
+    const a = parseFloat(m[1]);
+    const b = parseFloat(m[2]);
+    if (isNaN(a) || isNaN(b)) return undefined;
+    const min = Math.min(a, b);
+    const max = Math.max(a, b);
+    // 整数范围给 step=1，小数范围给 0.01
+    const isInt = Number.isInteger(min) && Number.isInteger(max);
+    return { min, max, step: isInt ? 1 : 0.01 };
+}
 /** 渲染基本类型（string, number, boolean），支持注释 */
 function renderPrimitive(
     value: JsonPrimitive,
@@ -256,7 +360,8 @@ function renderPrimitive(
     container: HTMLElement,
     path: string,
     labelText?: string,
-    comment?: string
+    comment?: string,
+    range?: { min?: number; max?: number; step?: number }, 
 ): void {
     const div = document.createElement('div');
     Object.assign(div.style, { marginBottom: '1rem' });
@@ -296,7 +401,7 @@ function renderPrimitive(
         div.appendChild(input);
         // checkbox 无法使用 placeholder，注释已显示在 label 中
     } else {
-        input = document.createElement('input');
+input = document.createElement('input');
         input.type = type === 'number' ? 'number' : 'text';
         input.id = id;
         input.value = value?.toString() ?? '';
@@ -307,6 +412,23 @@ function renderPrimitive(
             borderRadius: '4px',
             fontSize: '0.875rem',
         });
+
+        // ===== number 范围 =====
+        if (type === 'number' && range) {
+            if (range.min !== undefined) input.min = String(range.min);
+            if (range.max !== undefined) input.max = String(range.max);
+            input.step = String(range.step ?? 'any');
+            // 超出范围时给红框提示
+            const validate = () => {
+                input.style.borderColor = input.validity.rangeUnderflow || input.validity.rangeOverflow
+                    ? '#f00'
+                    : '#ccc';
+            };
+            input.addEventListener('input', validate);
+            validate();
+        }
+        // ========================
+
         if (comment) {input.placeholder = comment;}
         input.setAttribute('data-path', path);
         input.setAttribute('data-type', type);
@@ -322,8 +444,7 @@ function renderPrimitive(
  * @param rootContainer 包含所有表单控件的容器
  */
 export function collectFormData(rootContainer: HTMLElement): any {
-    const result: any = {};
-
+    const result: any = {}; 
     // 收集基本类型 input（checkbox, text, number）
     const inputs = rootContainer.querySelectorAll<HTMLInputElement>('input[data-path]');
     inputs.forEach(input => {
@@ -336,12 +457,29 @@ export function collectFormData(rootContainer: HTMLElement): any {
         } else if (type === 'number') {
             value = parseFloat(input.value);
             if (isNaN(value)) {value = 0;}
+            const min = input.min !== '' ? parseFloat(input.min) : undefined;
+            const max = input.max !== '' ? parseFloat(input.max) : undefined;
+            if (min !== undefined && value < min) value = min;
+            if (max !== undefined && value > max) value = max;
         } else {
             value = input.value;
         }
         setValueByPath(result, path, value);
     });
-
+    const selects = rootContainer.querySelectorAll<HTMLSelectElement>(
+        'select[data-path][data-type="array"]'
+    );
+    selects.forEach(select => {
+        const path = select.getAttribute('data-path');
+        if (!path) return;
+        const opt = select.selectedOptions[0];
+        if (!opt || opt.value === '') {
+            setValueByPath(result, path, '');        // 未选 → 空数组
+        } else {
+            const raw = JSON.parse(opt.dataset.rawValue ?? 'null');
+            setValueByPath(result, path, raw);     // 选中 → 单元素数组
+        }
+    });
     // 收集数组字段 textarea
     const textareas = rootContainer.querySelectorAll<HTMLTextAreaElement>('textarea[data-path][data-type="array"]');
     textareas.forEach(textarea => {

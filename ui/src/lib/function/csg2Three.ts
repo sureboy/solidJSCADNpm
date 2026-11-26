@@ -100,7 +100,7 @@ export function csg2Geo(obj:csgObj ,{ smooth = false }){
       transforms//:jscadToThreeRotation.clone().multiply(new Matrix4().fromArray(transforms ? transforms :  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toArray()
     }
 }
-  const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
+//  const jscadToThreeRotation = new Matrix4().makeRotationX(Math.PI / 2);
 export function CSG2Three(obj:csgObj , { smooth = false }) {
     //const obj = CSG2Vertices(csg)
     const { vertices, indices, normals, color, colors, isTransparent = false, opacity } = obj;

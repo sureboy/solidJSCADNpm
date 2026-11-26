@@ -5,8 +5,10 @@ import Menu from '#lib/components/Menu.svelte'
 import { csg2Geo } from "#lib/function/csg2Three.js"; 
 import { onMount } from 'svelte'; 
 import {  Vector3,WebGLRenderer } from 'three';
-import OrthoScene,{refreshCamera,refreshCameraInit,
-  type ConfigType}  from '#lib/components/OrthoScene.svelte'; 
+import OrthoScene,{
+  refreshCamera,refreshCameraInit,
+  type ConfigType,
+  type geometrysType}  from '#lib/components/OrthoScene.svelte'; 
 //import DownMenu from "#lib/components/DownMenu.svelte"; 
 import Camera,{toggleCamera}  from "#lib/components/Camera.svelte";
 import MainMenu ,{moduleInit} from "#lib/components/MainMenu.svelte";  
@@ -21,15 +23,7 @@ import {
 //import {postMain,onMainMessage,getTransferableList} from "worker/src/lib/utils/workerLib.js"
 //import { dev } from '$app/env';
 //    import { loadConfigFromFile } from 'vite';
-let geometrys:{
-  geometry:{
-    type:string, 
-    material:any,
-    geo:any,
-    transforms:any
-  }[], show:boolean,tag:string
-}[] = 
-  $state([])
+let geometrys:geometrysType = $state([])
 let stopTicker = $state(false) 
 let showMenu = $state(false) 
 let errHtml:HTMLElement
@@ -101,7 +95,7 @@ const updateGeometrys = (data:any)=>{
           return
         }
       }
-      geometrys.push( {geometry:[geo],tag:data.tag,show:true})
+      geometrys.push( {geometry:[geo],tag:data.tag,show:true })
       //console.log("push",geometrys.length)
     })()  
 
@@ -119,14 +113,15 @@ onMount(() => {
     if (newData.list){ 
       //console.log(newData)
       moduleInit( 
-      { 
+      { get geometrys() { return geometrys; }, 
         Clickhandle:( v: string|{ [k: string]: any;},e: boolean)=>{
           //console.log("runEvent",value)
-          console.log(e)
+          //console.log(e)
           if (typeof v!=="string"){
             getWorker().then(w=>{
-                w.postMessage({tag:window.localStorage.getItem("main")||"main",option:v})
-              })
+              geometrys = []
+              w.postMessage({tag:window.localStorage.getItem("main")||"main",option:v})
+            })
             return
           } 
           if (e){
