@@ -1,6 +1,9 @@
 import ErrorStackParser from 'error-stack-parser';
 
-export function parseError(err: Error,objUrlMap:Map<string,string>) {
+export async function parseError(err: Error,
+  handleErrorStack:(frame: ErrorStackParser.StackFrame)=>Promise<void>
+  //objUrlMap:Map<string,string>
+) {
   // 使用 Record<string, any> 存储结果
   const result: Record<string, any> = {
     name: 'Error',
@@ -44,18 +47,26 @@ export function parseError(err: Error,objUrlMap:Map<string,string>) {
   if (result.stack) {
     try {
       const parsed = ErrorStackParser.parse(err);
-      result.parsedStack = parsed.filter((frame) =>{ 
+      result.parsedStack = []
+      for (let frame of parsed){
+        
+        await handleErrorStack(frame)
+        /*
         if (!frame.fileName){
-          return false
-        }else{
-          const name =objUrlMap.get(frame.fileName)
-          if (!name)return false
-
-          //frame.name = name
-          Object.assign(frame,{name})
-          return true
+          result.parsedStack.push(frame)
+          break
         } 
-      });
+        const name =objUrlMap.get(frame.fileName) 
+        if (name){ 
+          const source = frame.source?.replace(frame.fileName,name)
+          const r = await fetch(frame.fileName) 
+          if (r){ 
+            Object.assign(frame,{fileText:await r.text()}) 
+          } 
+          Object.assign(frame,{name,source})
+        } */
+        result.parsedStack.push(frame)
+      } 
     } catch (parseError) {
       // 解析失败时保留空数组
       console.warn('Stack parse failed:', parseError);

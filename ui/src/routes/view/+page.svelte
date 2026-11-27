@@ -20,6 +20,7 @@ import { getWorker,terminateWorker } from '#lib/worker/globalWorker.ts';
 import {
   BufferGeometry,
 } from "three";  
+//    import { blob } from 'node:stream/consumers';
 //import {postMain,onMainMessage,getTransferableList} from "worker/src/lib/utils/workerLib.js"
 //import { dev } from '$app/env';
 //    import { loadConfigFromFile } from 'vite';
@@ -102,9 +103,60 @@ const updateGeometrys = (data:any)=>{
     setMaxSize(geo.geo) 
   }  
 }
-
+const errMessageHandle =async (e:MessageEvent<{err:any}>)=>{
+  let text = ""
+  if (e.data.err.message){
+    const p = document.createElement("span")
+    p.textContent = e.data.err.message
+    p.style.color="red"
+    text=e.data.err.message+'\n';
+    errHtml.appendChild(p)
+  }
+  if (e.data.err.parsedStack){ 
+     const files = []
+    for (let v of (e.data.err.parsedStack as {
+      name?:string,
+      fileName?:string,
+      source?:string,
+      fileText?:string}[])) {
+      console.log(v)
+      text+=v.source+'\n';
+      //const _p = document.createElement('p')
+      if (v.fileName){
+        const a =document.createElement('a')  
+        a.style.color="red" 
+        a.href=v.fileName
+        a.target="_blank"
+        a.textContent=v.source||"" 
+        //_p.appendChild(a)
+        if (v.fileText){ 
+          files.push("//source file:"+(v.name||v.fileName))
+          files.push(v.fileText)  
+        }
+        errHtml.append(document.createElement("br"),a)
+      }else{
+        const _p = document.createElement('p')
+        _p.textContent = v.source||""
+        errHtml.append(document.createElement("br"),_p)
+      }
+      
+    }
+    text += files.join("\n")
+  }  
+  //errHtml.innerHTML="" 
+  const helpA =document.createElement('a')
+  helpA.textContent = "Let AI analyze the errMsg.txt"
+  helpA.target="_blank"
+  helpA.style.color="red" 
+  helpA.href = URL.createObjectURL(new Blob([text])) 
+  errHtml.append(document.createElement("br"),helpA) 
+}
 onMount(() => {  
   getWorker((e)=>{
+    if (e.data.err ){
+      errMessageHandle(e)  
+      return; 
+    } 
     //console.log(e)
     const newData =  e.data;
     if (newData.index){ 
@@ -164,6 +216,7 @@ onMount(() => {
       } ) 
     }
     if (newData.start){
+      if (errHtml) errHtml.innerHTML=""
       solidControlConfig.GridSize=10
       solidControlConfig.MaxSize.set(10,10,10)
       showMenu=false
@@ -189,6 +242,7 @@ onMount(() => {
       }
       //console.log("end",dom)
     }
+
   }).then(w=>{
     const name =(window.location.hash.slice(1)||"/src/index.js") 
     const u = new URL(name,rootUrl)
@@ -248,7 +302,7 @@ const getContext = (Context: ThrelteContext<WebGLRenderer>)=>{
  
    {#if stopTicker}<p>{showRunTime}s</p>{/if}
   </div>
- <div style="color:white;text-align: left;" bind:this={errHtml}></div>
+ <div style="color:white;text-align: left;" data-err="err" bind:this={errHtml}></div>
 </Menu>
 
 

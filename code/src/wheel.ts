@@ -1,5 +1,6 @@
-//index.ts
+//wheel.ts
 import modeling from "@jscad/modeling";
+const { geom3 } = modeling.geometries;
 //import modeling from './lib/modeling.esm.js'
 import {gear} from './gear.ts' 
 export const DefaultOpt = {
@@ -15,6 +16,17 @@ export const DefaultOpt = {
   spielA :0.2,
   spielB : 0
 }
+const unionReturn = (...csg:any)=> csg.map((c:any)=>{
+  if (Array.isArray(c)){
+    return unionReturn(...c)
+  }
+  if (geom3.isA(c)){
+    const _c = geom3.create(geom3.toPolygons(c as geom3.Geom3))
+    _c.color = c.color
+    return _c
+  }
+  return c
+})
 
 export const sunB = (opt:any={})=>{
   const {miniWheelopt,height ,heightSlit}=Object.assign({},DefaultOpt,opt.DefaultOpt||{})
@@ -34,7 +46,7 @@ export const sunA = (opt:any={})=>{
   //console.log("sun",miniWheelopt,opt.DefaultOpt)
   const baseR = miniWheelopt.gA.modul*miniWheelopt.gA.sun/2+miniWheelopt.gA.modul*2 
 
-  return modeling.transforms.translateZ(height+heightSlit+slit, [  
+  return unionReturn(...modeling.transforms.translateZ(height+heightSlit+slit, [  
     modeling.transforms.translateZ(height, 
       modeling.extrusions.extrudeLinear({height:height/2},
         modeling.booleans.subtract(
@@ -64,7 +76,7 @@ export const sunA = (opt:any={})=>{
       gearNum:miniWheelopt.gA.sun,
       dif:0,txx:heightSlit,txxEnd:heightSlit})
     ]
-  )
+  ))
 }
 const boFix = (o=5)=>{
     const o1 = o/2
@@ -86,11 +98,12 @@ export const plantGroup = (opt:any={})=>{
   const r = (miniWheelopt.gA.sun + miniWheelopt.gA.plant)/2 * miniWheelopt.gA.modul
   const pie = gear.PI2/3
   const p =  plant(opt)
-  return [
-    modeling.transforms.translate([...gear.pol_zu_kart([r,pie*0])] as any,p),
-    modeling.transforms.translate([...gear.pol_zu_kart([r,pie*1])] as any,p),
-    modeling.transforms.translate([...gear.pol_zu_kart([r,pie*2])] as any,p),  
-  ]
+  test
+  return unionReturn(
+    ...modeling.transforms.translate([...gear.pol_zu_kart([r,pie*0])] as any,p),
+    ...modeling.transforms.translate([...gear.pol_zu_kart([r,pie*1])] as any,p),
+   ...modeling.transforms.translate([...gear.pol_zu_kart([r,pie*2])] as any,p)
+  )
 }
 const plant = ( opt:any={spielA :0.2,spielB : 0})=>{  
   const {heightSlit,
@@ -170,11 +183,11 @@ export const ringA = (opt:any={})=>{
     )
   )       
   const rss = [r2,modeling.transforms.mirrorY(r2)]  
-  return modeling.transforms.translateZ(height+heightSlit+slit, [ Ring,r1,
+  return unionReturn(...modeling.transforms.translateZ(height+heightSlit+slit, [ Ring,r1,
     // modeling.primitives.cylinder({height,radius:1,center:[ringArWidth,0,height/2]}),
     // modeling.extrusions.extrudeLinear({height},
     //  modeling.booleans.subtract(...cy)) ,
-    modeling.transforms.translateZ(height,rss)])
+    modeling.transforms.translateZ(height,rss)]))
 }
 export const ringB = (opt:any={})=>{
   const {miniWheelopt,height,slit,width,heightSlit}=Object.assign({},DefaultOpt,opt.DefaultOpt||{})
@@ -303,7 +316,7 @@ export const ringB = (opt:any={})=>{
             r4_1
         )
       )
-  return rss
+  return unionReturn(...rss)
 }
 
 export const ringBCap = (opt:any={})=>{

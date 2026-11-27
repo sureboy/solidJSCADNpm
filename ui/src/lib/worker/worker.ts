@@ -6,10 +6,8 @@ import {
 import {getCsgObjArray} from 'worker/src/lib/function/csgChange' 
 import {createStorage} from 'worker/src/lib/storage-adapter/factory'
 import { StorageAdapter } from 'worker/src/lib/storage-adapter/adapter.ts';
-import tsBlankSpace from "ts-blank-space";
-//import {sendGeometry} from '$lib/function/geoSend'
-//import {parseError} from '#lib/utils/parseError.ts';
-//import {type DirInfoType,createDirInfo} from "worker/src/lib/function/fileHandle"
+//import tsBlankSpace from "ts-blank-space"; 
+import {parseError} from 'worker/src/lib/utils/parseError';
 import {postMain,onMainMessage,getTransferableList} from 'worker/src/lib/utils/workerLib.ts';  
 const includeImport:{[key:string]:string} = {}
 const defaultOption:{
@@ -47,9 +45,9 @@ const postMsg =async (e:any)=>{
   if (ispath){
     try{  
       let db = await globalOption.DirHandle?.readFile(e.path ,"utf8") 
-      if ((e.path as string).endsWith(".ts")){
-        db = tsBlankSpace(db)
-      }
+      //if ((e.path as string).endsWith(".ts")){
+      //  db = tsBlankSpace(db)
+      //}
       handleCurrentMsg({ db,name:e.path },postMsg)   
       return
     }catch(err){   
@@ -124,8 +122,8 @@ onMainMessage(async (event) => {
     }catch(e){}
   }
 
-    if (  event.tag) { 
-       try{
+  if (  event.tag) { 
+    try{
       let tag = event.tag as string
       console.log(tag,defaultOption.list)
       if (!defaultOption.list.includes(tag)){
@@ -154,6 +152,17 @@ onMainMessage(async (event) => {
         
       })
     }catch(e){
+      self.postMessage({err:await parseError(e as Error,async (frame)=>{
+        if (!frame.fileName){
+          return
+        } 
+        const name =objUrlMap.get(frame.fileName) 
+        if (name){ 
+          const source = frame.source?.replace(frame.fileName,name)
+          const c = await getCurrent(name)  
+          Object.assign(frame,{name,source,fileText:c.db})
+        }
+      })})
       console.error(e)
     }
     postMain({end:event.tag})

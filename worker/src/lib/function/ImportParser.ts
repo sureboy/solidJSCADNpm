@@ -1,5 +1,5 @@
 import { init, parse } from 'es-module-lexer';
-
+import tsBlankSpace from "ts-blank-space"; 
 //init
     
 type messageObj = {
@@ -40,23 +40,28 @@ const reloadCurrent =async (c:currentObj,msg:messageObj,postMessage?:(e:any)=>vo
     if (!msg.db){
         return;
     }
+    
     c.srcList = [];
-    let src = "";
+    let db = "";
     if (typeof msg.db ==="string"){
-        src = msg.db;
+        db = msg.db;
     }else if ( msg.db instanceof ArrayBuffer){
-        src = decoder.decode(msg.db);
+        db = decoder.decode(msg.db);
     }else{
         console.log(msg,typeof msg.db);
         return;
-    } 
+    }  
+    Object.assign(c,{db}) 
+    if ((msg.name as string).endsWith(".ts")){
+        db = tsBlankSpace(db)
+    }
     let tmpEndPos:number = 0; 
     await init();
-    const [imports] = parse(src, msg.name);
+    const [imports] = parse(db, msg.name);
     //console.log(imports)
     imports.forEach(val=>{ 
         if (val.specifier){        
-            c.srcList!.push(src.slice(tmpEndPos,val.start) );
+            c.srcList!.push(db.slice(tmpEndPos,val.start) );
             c.srcList!.push(()=>getCurrent(val.specifier||"",postMessage));
             tmpEndPos = val.end;
         }
@@ -68,7 +73,7 @@ const reloadCurrent =async (c:currentObj,msg:messageObj,postMessage?:(e:any)=>vo
         c.srcList!.push( ()=>getCurrent(p.moduleName,postMessage) );
         tmpEndPos = p.endPosition;
     });*/
-    c.srcList.push( src.slice(tmpEndPos) ); 
+    c.srcList.push( db.slice(tmpEndPos) ); 
     //console.log(c.srcList)
 };
 export const getCurrent = (name:string,reqMessage?:(e:{type:"req",path:string})=>void )=>{

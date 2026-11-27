@@ -46,6 +46,11 @@ export const startHttp =async (opt:baseConfig,getApp:(app: express.Express)=>voi
             res.status(500).json({ ok: false, error: err.message });
         }
     })*/
+    app.post("/err",async (req,res)=>{
+        const text = req.body ?? "";
+        text.split(/\r?\n/).filter(Boolean).forEach((line:any) => console.log(line));
+        res.sendStatus(200);
+    })
     app.use('/src',express.static(config.srcDir ))
     //app.use('/tmp',express.static(TMP_CACHE_DIR))
     app.get('/modules/*path',async (req,res)=>{
