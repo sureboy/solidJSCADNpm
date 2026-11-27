@@ -119,7 +119,20 @@ onMainMessage(async (event) => {
       }) 
       //const list = [...fnlistSet]
       postMain({list:defaultOption.list ,option:defaultOption.option,tag:event.tag||""})  
-    }catch(e){}
+    }catch(e){
+      self.postMessage({err:await parseError(e as Error,async (frame)=>{
+        if (!frame.fileName){
+          return
+        } 
+        const name =objUrlMap.get(frame.fileName) 
+        if (name){ 
+          const source = frame.source?.replace(frame.fileName,name)
+          const c = await getCurrent(name)  
+          Object.assign(frame,{name,source,fileText:c.db})
+        }
+      })})
+      console.error(e)
+    }
   }
 
   if (  event.tag) { 

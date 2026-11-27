@@ -98,7 +98,7 @@ export const plantGroup = (opt:any={})=>{
   const r = (miniWheelopt.gA.sun + miniWheelopt.gA.plant)/2 * miniWheelopt.gA.modul
   const pie = gear.PI2/3
   const p =  plant(opt)
-  test
+  //test
   return unionReturn(
     ...modeling.transforms.translate([...gear.pol_zu_kart([r,pie*0])] as any,p),
     ...modeling.transforms.translate([...gear.pol_zu_kart([r,pie*1])] as any,p),
