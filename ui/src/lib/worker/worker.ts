@@ -80,6 +80,22 @@ const postMsg =async (e:any)=>{
       return uri
     }
 }
+const errHandle =async (e:Error)=>{
+  const err =await parseError(e  ,async (frame)=>{
+      if (!frame.fileName){
+        return
+      } 
+      const name =objUrlMap.get(frame.fileName) 
+      if (name){ 
+        const source = frame.source?.replace(frame.fileName,name)
+        const c = await getCurrent(name)  
+        Object.assign(frame,{name,source,fileText:c.db})
+      }
+    })
+  self.postMessage({err})
+  //fetch("/err",{method:"POST",body:err})
+  console.error(e)
+}
 onMainMessage(async (event) => { 
   if (event.option){
     defaultOption.option =Object.assign(defaultOption.option,event.option) 
@@ -120,18 +136,8 @@ onMainMessage(async (event) => {
       //const list = [...fnlistSet]
       postMain({list:defaultOption.list ,option:defaultOption.option,tag:event.tag||""})  
     }catch(e){
-      self.postMessage({err:await parseError(e as Error,async (frame)=>{
-        if (!frame.fileName){
-          return
-        } 
-        const name =objUrlMap.get(frame.fileName) 
-        if (name){ 
-          const source = frame.source?.replace(frame.fileName,name)
-          const c = await getCurrent(name)  
-          Object.assign(frame,{name,source,fileText:c.db})
-        }
-      })})
-      console.error(e)
+      errHandle(e as Error)
+      
     }
   }
 
@@ -165,18 +171,8 @@ onMainMessage(async (event) => {
         
       })
     }catch(e){
-      self.postMessage({err:await parseError(e as Error,async (frame)=>{
-        if (!frame.fileName){
-          return
-        } 
-        const name =objUrlMap.get(frame.fileName) 
-        if (name){ 
-          const source = frame.source?.replace(frame.fileName,name)
-          const c = await getCurrent(name)  
-          Object.assign(frame,{name,source,fileText:c.db})
-        }
-      })})
-      console.error(e)
+      errHandle(e as Error)
+      //console.error(e)
     }
     postMain({end:event.tag})
     //console.log(mod,mod['bottom']() )
